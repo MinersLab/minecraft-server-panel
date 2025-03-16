@@ -49,3 +49,4 @@ vite.generated.ts
 types.d.ts
 src/main/bundles/
 .mcsp/
+/tsconfig.json
