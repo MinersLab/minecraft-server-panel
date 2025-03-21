@@ -33,7 +33,9 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+	api("com.google.jimfs:jimfs:1.3.0")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
+	api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
 
 dependencyManagement {

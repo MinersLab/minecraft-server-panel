@@ -50,3 +50,4 @@ types.d.ts
 src/main/bundles/
 .mcsp/
 /tsconfig.json
+/target

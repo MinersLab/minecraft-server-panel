@@ -1,3 +1,6 @@
 package minerslab.mcsp.app.instance
 
-data class InstanceConfig(val launchCommand: String)
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class InstanceConfig(val name: String = "新建实例", val launchCommand: String = "")

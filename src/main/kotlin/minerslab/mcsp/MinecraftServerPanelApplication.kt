@@ -1,5 +1,6 @@
 package minerslab.mcsp
 
+import com.vaadin.flow.component.dependency.CssImport
 import com.vaadin.flow.component.page.AppShellConfigurator
 import com.vaadin.flow.theme.Theme
 import com.vaadin.flow.theme.lumo.Lumo
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableScheduling
 @EnableWebMvc
 @Theme(variant = "dark", themeClass = Lumo::class)
+@CssImport("./styles/index.css")
 class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator {
 
 	@Serializable

@@ -1,8 +1,10 @@
+// @ts-ignore
 import {ReactAdapterElement, type RenderHooks} from "Frontend/generated/flow/ReactAdapter";
 import {ReactElement, useEffect} from "react";
 import ReactECharts, {EChartsOption} from "echarts-for-react";
 
 function processData(data: number[]): EChartsOption {
+    // @ts-ignore
     return {
         title: {
             show: true,
