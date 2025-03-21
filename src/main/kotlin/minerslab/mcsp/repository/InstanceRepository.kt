@@ -30,10 +30,10 @@ class InstanceRepository {
         return Instance(file.toPath())
     }
 
-    fun addInstance() {
+    fun addInstance(): Instance {
         var uuid = UUID.randomUUID()
         while (path().resolve(uuid.toString()).exists()) uuid = UUID.randomUUID()
-        Instance(path().resolve(uuid.toString()).toFile().also { it.mkdirs() }.toPath())
+        return Instance(path().resolve(uuid.toString()).toFile().also { it.mkdirs() }.toPath())
     }
 
 }

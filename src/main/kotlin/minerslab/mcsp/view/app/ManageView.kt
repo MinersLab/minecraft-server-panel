@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
+import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.component.Breadcrumb
 import minerslab.mcsp.layout.MainLayout
@@ -16,7 +17,7 @@ import java.util.*
 
 @Route("/apps/:id/manage", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
-class ManageView(private val instanceRepository: InstanceRepository) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
+class ManageView(private val instanceRepository: InstanceRepository, private val authContext: AuthenticationContext) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
     init {
         isPadding = true
@@ -25,6 +26,9 @@ class ManageView(private val instanceRepository: InstanceRepository) : VerticalL
     override fun beforeEnter(event: BeforeEnterEvent) {
         val instanceId = event.routeParameters.get("id").get()
         val instance = instanceRepository.findById(UUID.fromString(instanceId))
+        if (!instance.config.users.contains(authContext.principalName.get())) {
+            event.rerouteToError(AccessDeniedException::class.java)
+        }
         val output = TextArea().apply {
             isReadOnly = true
             setHeightFull()
