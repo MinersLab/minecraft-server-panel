@@ -2,12 +2,13 @@
 import {ReactAdapterElement, type RenderHooks} from "Frontend/generated/flow/ReactAdapter";
 import {ReactElement, useEffect} from "react";
 import ReactECharts, {EChartsOption} from "echarts-for-react";
+import {theme} from "../../Chart";
 
 function processData(data: number[]): EChartsOption {
     // @ts-ignore
     return {
         title: {
-            show: true,
+            show: false,
             text: "接口请求数量"
         },
         xAxis: {
@@ -44,7 +45,7 @@ class McspRequestCountingChart extends ReactAdapterElement {
             );
             return () => clearInterval(interval);
         });
-        return <ReactECharts option={options} theme="mcsp-dark" notMerge={true} lazyUpdate={true}></ReactECharts>;
+        return <ReactECharts option={options} theme={theme} notMerge={true} lazyUpdate={true}></ReactECharts>;
     }
 
 }

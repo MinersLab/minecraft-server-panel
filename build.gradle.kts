@@ -4,7 +4,7 @@ plugins {
 	kotlin("plugin.serialization") version "2.1.10"
 	id("org.springframework.boot") version "3.4.4-SNAPSHOT"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.vaadin") version "24.6.6"
+	id("com.vaadin") version "24.7.0"
 }
 
 group = "minerslab.mcsp"
@@ -33,6 +33,9 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+	implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
+
+	api("com.github.oshi:oshi-core:6.7.1")
 	api("com.google.jimfs:jimfs:1.3.0")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
@@ -40,13 +43,25 @@ dependencies {
 
 dependencyManagement {
 	imports {
-		mavenBom("com.vaadin:vaadin-bom:${property("vaadinVersion")}")
+		mavenBom("com.vaadin:vaadin-bom:${property("vaadin.version")}")
 	}
 }
 
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
+	}
+}
+
+tasks.withType<ProcessResources> {
+	filesMatching("application.yml") {
+		expand(
+			mapOf(
+				"project" to project,
+				"rootProject" to rootProject,
+				"gradle" to gradle
+			)
+		)
 	}
 }
 

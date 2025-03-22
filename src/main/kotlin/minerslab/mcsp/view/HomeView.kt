@@ -1,14 +1,32 @@
 package minerslab.mcsp.view
 
 import com.vaadin.flow.component.Tag
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.dependency.JsModule
 import com.vaadin.flow.component.dependency.NpmPackage
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.H1
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.react.ReactAdapterComponent
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.PermitAll
+import minerslab.mcsp.component.Card
+import minerslab.mcsp.component.Interval
 import minerslab.mcsp.layout.MainLayout
+import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.service.InstanceService
+import minerslab.mcsp.util.FileSizeUtil
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.system.JavaVersion
+import oshi.SystemInfo
+import java.net.InetAddress
+import java.text.DecimalFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.CompletableFuture
+
 
 @Tag("mcsp-home-request-counting-chart")
 @JsModule("./components/view/home/RequestCountingChart.tsx")
@@ -18,13 +36,116 @@ class RequestCountingChart : ReactAdapterComponent()
 
 @Route("/", layout = MainLayout::class)
 @PermitAll
-class HomeView(authContext: AuthenticationContext) : Div() {
+class HomeView(
+    authContext: AuthenticationContext,
+    private val instanceService: InstanceService,
+    private val instanceRepository: InstanceRepository,
+    @Value("\${spring.application.version}") version: String
+) : VerticalLayout() {
+
+    private val systemInfo = SystemInfo()
+    private val operatingSystem = systemInfo.operatingSystem
+    private val layer = systemInfo.hardware
+    private val cpu = layer.processor
+    private val ram = layer.memory
+    private val decimalFormat = DecimalFormat("0.00")
 
     init {
-        Div().apply {
-            style["padding"] = "2rem"
-            RequestCountingChart().apply {
-                isVisible = authContext.hasAnyRole("OWNER", "ADMIN")
+        style["padding"] = "2rem"
+        setHeightFull()
+        setWidthFull()
+        HorizontalLayout().apply {
+            isSpacing = true
+            setWidthFull()
+            Card().apply {
+                title = Div("系统资源")
+                subtitle = Div("CPU, RAM")
+                val content = Div("0%, 0%")
+                add(
+                    content,
+                    Interval().timeout(2000).once(just = true) {
+                        val cpuLoadPercent = cpu.getSystemCpuLoad(1000) * 100
+                        val ramUsedPercent = (ram.total - ram.available).toDouble() / ram.total * 100
+                        content.text = "${decimalFormat.format(cpuLoadPercent)}%, ${decimalFormat.format(ramUsedPercent)}%"
+                    }
+                )
+            }.also { addToStart(it) }
+            Card().apply {
+                add(H1("欢迎使用 Minecraft Server Panel"))
+            }.also { addToMiddle(it) }
+            Card().apply {
+                val instances = instanceRepository.findAll().map { instanceService.get(it)?.isAlive == true }
+                title = Div("实例")
+                subtitle = Div("正在运行实例 / 全部实例")
+                add(Div("${instances.count { it }} / ${instances.size}"))
+                setWidthFull()
+            }.also { addToEnd(it) }
+        }.also { add(it) }
+        HorizontalLayout().apply {
+            isVisible = authContext.hasAnyRole("OWNER", "ADMIN")
+            setWidthFull()
+            Card().apply {
+                setWidthFull()
+                title = Div("接口请求")
+                RequestCountingChart().apply {
+                    setWidthFull()
+                }.also { add(it) }
+            }.also { addToEnd(it) }
+        }.also { add(it) }
+
+        val overview = VerticalLayout()
+        fun dataOverview() {
+            overview.removeAll()
+            val dataOverview = setOf(
+                "Java 版本" to { JavaVersion.getJavaVersion().toString() },
+                "面板版本" to { version },
+                "进程用户名" to { System.getProperty("user.name") },
+                "面板用户名" to { authContext.principalName.get() },
+                "面板时间" to { LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) },
+                "浏览器时间" to {
+                    UI.getCurrent().page.executeJs("return new Date().toISOString()").toCompletableFuture()
+                        .thenApply { it.asString() }
+                },
+                "内存" to {
+                    FileSizeUtil.formatFileSize(ram.total - ram.available) + " / " + FileSizeUtil.formatFileSize(
+                        ram.total
+                    )
+                },
+                "负载" to { cpu.getSystemLoadAverage(3).joinToString(" / ") { if (it < 0) "N/A" else decimalFormat.format(it) } },
+                "主机名" to { InetAddress.getLocalHost().hostName },
+                "面板内存占用" to { FileSizeUtil.formatFileSize(Runtime.getRuntime().totalMemory()) },
+                "系统类型" to { operatingSystem.family },
+                "系统版本" to { operatingSystem }
+            ).chunked(4)
+            for (chunk in dataOverview) {
+                HorizontalLayout().apply {
+                    for (item in chunk) {
+                        isSpacing = true
+                        setWidthFull()
+                        VerticalLayout().apply {
+                            val first = Div(item.first)
+                            val second = Div()
+                            val secondValue = item.second()
+                            if (secondValue is CompletableFuture<*>) secondValue.thenAccept { second.text = it.toString() }
+                            else second.text = secondValue.toString()
+                            add(first, second)
+                        }.also { add(it) }
+                    }
+                }.also { overview.add(it) }
+            }
+        }
+
+        add(
+            Interval().timeout(1000).once { dataOverview() }
+        )
+
+        HorizontalLayout().apply {
+            isSpacing = true
+            setWidthFull()
+            Card().apply {
+                setWidthFull()
+                title = Div("数据概览")
+                add(overview)
             }.also { add(it) }
         }.also { add(it) }
     }

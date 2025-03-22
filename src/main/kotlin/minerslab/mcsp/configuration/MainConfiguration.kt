@@ -8,7 +8,6 @@ import minerslab.mcsp.MinecraftServerPanelApplication
 import minerslab.mcsp.util.createIfNotExists
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.util.ResourceUtils
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.isDirectory
@@ -29,7 +28,7 @@ class MainConfiguration {
         val file = Path.of(path.pathString, "mcsp.conf")
             .toFile()
             .createIfNotExists {
-                ResourceUtils.getFile("classpath:config/mcsp.conf").readBytes()
+                this::class.java.getResourceAsStream("/config/mcsp.conf")?.readBytes() ?: byteArrayOf()
             }
         return Hocon.decodeFromConfig(ConfigFactory.parseFile(file))
     }

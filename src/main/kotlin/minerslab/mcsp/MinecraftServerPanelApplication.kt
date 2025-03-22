@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @SpringBootApplication
 @EnableScheduling
 @EnableWebMvc
-@Theme(variant = "dark", themeClass = Lumo::class)
+@Theme("mcsp", variant = Lumo.DARK)
 @CssImport("./styles/index.css")
 class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator {
 

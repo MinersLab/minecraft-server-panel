@@ -41,13 +41,16 @@ class InstanceService(private val instanceRepository: InstanceRepository) : Disp
 
     fun stop(instance: Instance, force: Boolean = false) {
         if (force || instance.config.stopCommand == "<mcsp:force-stop>") {
+            processPool[instance.id]?.destroyForcibly()
+            processPool.remove(instance.id)
+        } else if (instance.config.stopCommand == "<mcsp:stop>") {
             processPool[instance.id]?.destroy()
             processPool.remove(instance.id)
-            return
+        } else {
+            processPool[instance.id]?.outputStream?.write((instance.config.stopCommand + "\n").toByteArray())
+            processPool[instance.id]?.outputStream?.flush()
+            processPool[instance.id]?.onExit()?.handle { _, _ -> processPool.remove(instance.id) }
         }
-        processPool[instance.id]?.outputStream?.write((instance.config.stopCommand + "\n").toByteArray())
-        processPool[instance.id]?.outputStream?.flush()
-        processPool[instance.id]?.onExit()?.handle { _, _ -> processPool.remove(instance.id) }
     }
 
 }

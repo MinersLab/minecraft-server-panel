@@ -1,2 +1,2 @@
-vaadin.launch-browser: true
 spring.application.name: minecraft-server-panel
+spring.application.version: ${project.version}

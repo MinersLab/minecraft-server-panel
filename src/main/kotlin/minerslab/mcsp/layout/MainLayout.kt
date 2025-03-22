@@ -29,7 +29,7 @@ class MainLayout(authContext: AuthenticationContext) : AppLayout(), HasDynamicTi
         }
         val profileButton = Button(Icon("lumo:user")).apply {
             style["margin-right"] = "var(--lumo-space-m)"
-            isVisible = authContext.hasAnyRole("OWNER", "ADMIN", "VISITOR")
+            isVisible = authContext.hasAnyRole("OWNER", "ADMIN", "USER")
             addClickListener { UI.getCurrent().navigate("/profile") }
         }
         addToNavbar(title, myAppsButton, profileButton)

@@ -1,3 +1,12 @@
 .mcsp-no-select {
     user-select: none;
 }
+
+.mcsp-link:hover {
+    text-decoration: underline;
+    color: #57a1f8;
+}
+
+.mcsp-link {
+    transition: color 0.1s ease-in;
+}

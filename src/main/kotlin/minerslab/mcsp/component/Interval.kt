@@ -12,7 +12,11 @@ class Interval : ReactAdapterComponent() {
         get() = getState("timeout", Long::class.java)
         set(value) = setState("timeout", value)
 
-    fun once(callback: () -> Unit) = apply {
+    fun timeout() = timeout
+    fun timeout(value: Long) = apply { timeout = value }
+
+    fun once(just: Boolean = false, callback: () -> Unit) = apply {
+        if (just) callback()
         addStateChangeListener("times", Long::class.java) {
             callback()
         }

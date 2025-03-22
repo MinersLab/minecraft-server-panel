@@ -37,6 +37,9 @@ class ManageView(
     private val instanceService: InstanceService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
+    private val commandHistory = mutableListOf<String>()
+    private var currentCommand: Int = 0
+
     init {
         isPadding = true
     }
@@ -76,8 +79,17 @@ class ManageView(
                     log("$value\n")
                     instanceService.get(instance)?.outputStream?.write("$value\n".toByteArray(inputCharset))
                     instanceService.get(instance)?.outputStream?.flush()
+                    if (commandHistory.contains(value)) commandHistory.remove(value)
+                    commandHistory += value
+                    currentCommand = commandHistory.size
                     value = ""
                     scroller.scrollToBottom()
+                } else if (it.key.matches("ArrowUp")) {
+                    currentCommand = max(currentCommand - 1, 0)
+                    value = commandHistory.getOrNull(currentCommand) ?: ""
+                } else if (it.key.matches("ArrowDown")) {
+                    currentCommand = max(currentCommand + 1, commandHistory.size - 1)
+                    value = commandHistory.getOrNull(currentCommand) ?: ""
                 }
             }
         }
@@ -124,6 +136,11 @@ class ManageView(
                 UI.getCurrent().navigate("/apps/$instanceId/config")
             }
         }
+        val fileButton = Button("文件").apply {
+            addClickListener {
+                UI.getCurrent().navigate("/apps/$instanceId/file/")
+            }
+        }
         add(
             interval,
             Breadcrumb(RouterLink("我的应用", AppsView::class.java), Text(instance.getName())),
@@ -136,7 +153,7 @@ class ManageView(
             scroller,
             input,
             HorizontalLayout().apply {
-                add(startButton, stopButton, forceStopButton, configButton)
+                add(startButton, stopButton, forceStopButton, configButton, fileButton)
             }
         )
     }
