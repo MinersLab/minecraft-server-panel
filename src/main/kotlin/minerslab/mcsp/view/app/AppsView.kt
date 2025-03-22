@@ -13,23 +13,33 @@ import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.app.instance.Instance
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.service.InstanceService
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Route("/apps", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
-class AppsView(instanceRepository: InstanceRepository, authContext: AuthenticationContext) : VerticalLayout() {
+class AppsView(
+    instanceRepository: InstanceRepository,
+    authContext: AuthenticationContext,
+    private val instanceService: InstanceService
+) : VerticalLayout() {
 
     init {
         isPadding = true
         val addInstanceButton = Button("创建实例", Icon(VaadinIcon.PLUS)).apply {
             addClickListener {
-                val instance = instanceRepository.addInstance()
-                instance.config = instance.config.copy(users = listOf(authContext.principalName.get()))
-                UI.getCurrent().refreshCurrentRoute(false)
+                UI.getCurrent().navigate("app/new/")
             }
             addThemeVariants(ButtonVariant.LUMO_WARNING)
         }
         val grid = Grid(Instance::class.java, false)
         grid.addColumn { it.getName() }.setHeader("实例名称")
+        grid.addColumn { if (instanceService.get(it)?.isAlive == true) "运行中" else "未运行" }.setHeader("运行状态")
+        grid.addColumn { "${it.config.inputCharset} / ${it.config.outputCharset}" }.setHeader("字节流编码")
+        grid.addColumn { if (it.config.lastLaunchTime == null) "-" else LocalDateTime.ofInstant(Instant.ofEpochMilli(it.config.lastLaunchTime!!), ZoneId.systemDefault()) }
+            .setHeader("最后启动")
         grid.isRowsDraggable = true
         grid.addComponentColumn { instance ->
             Button("管理").apply {
