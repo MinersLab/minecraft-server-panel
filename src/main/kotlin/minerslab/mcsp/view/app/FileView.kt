@@ -1,15 +1,23 @@
 package minerslab.mcsp.view.app
 
+import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.notification.Notification
+import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
+import minerslab.mcsp.component.Breadcrumb
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
@@ -33,10 +41,12 @@ class FileView(
 
     init {
         setHeightFull()
+        isSpacing = false
         isPadding = true
     }
 
     override fun beforeEnter(event: BeforeEnterEvent) {
+        removeAll()
         val instanceId = event.routeParameters.get("id").get()
         val instance = instanceRepository.findById(UUID.fromString(instanceId))
         val base = event.location.queryParameters.getSingleParameter("path")
@@ -56,13 +66,11 @@ class FileView(
                     base.resolve(resolve).toRelativeString(instance.path.toFile())
                 )
             )
-            UI.getCurrent().refreshCurrentRoute(false)
+            UI.getCurrent().refreshCurrentRoute(true)
         }
 
         val grid = Grid(File::class.java, false)
         val files = base.listFiles()?.filterNot { it.name.startsWith(".mcsp") }?.sortedByDescending { it.isDirectory }?.toMutableList() ?: mutableListOf()
-        if (base.parentFile.normalize().startsWith(instance.path.toFile()))
-            files.add(0, base.parentFile)
         grid.selectionMode = Grid.SelectionMode.MULTI
         grid.addComponentColumn { that ->
             Span(that.toRelativeString(base)).apply {
@@ -84,6 +92,57 @@ class FileView(
         grid.setItems(files)
         grid.setHeightFull()
 
+        var newFileName = ""
+        val nameDialog = Dialog().apply {
+            isCloseOnEsc = false
+            isCloseOnOutsideClick = false
+            val input = TextField().apply {
+                placeholder = "文件名"
+            }.also { add(it) }
+            addOpenedChangeListener { if (it.isOpened) input.value = newFileName }
+            footer.apply {
+                Button("确认").apply {
+                    addClickListener {
+                        newFileName = input.value
+                        input.value = ""
+                        close()
+                    }
+                }.also { add(it) }
+                Button("取消").apply {
+                    addClickListener {
+                        input.value = ""
+                        close()
+                    }
+                }.also { add(it) }
+            }
+
+        }
+        add(nameDialog)
+
+        grid.addComponentColumn { file ->
+            Div().apply {
+                Button(Icon(VaadinIcon.EDIT)).apply {
+                    setTooltipText("重命名")
+                    addClickListener {
+                        newFileName = file.name
+                        nameDialog.headerTitle = "重命名 ${file.name}"
+                        nameDialog.open()
+                        nameDialog.addOpenedChangeListener {
+                            if (it.isOpened) return@addOpenedChangeListener
+                            if (newFileName.isNotBlank() && newFileName != file.name) {
+                                val status = file.renameTo(File(file.parentFile, newFileName))
+                                Notification.show(if (status) "已将 ${file.name} 重命名为 $newFileName" else "重命名失败").addThemeVariants(
+                                    if (status) NotificationVariant.LUMO_SUCCESS else NotificationVariant.LUMO_WARNING
+                                )
+                            }
+                            it.unregisterListener()
+                            UI.getCurrent().refreshCurrentRoute(true)
+                        }
+                    }
+                }.also { add(it) }
+            }
+        }.setHeader("操作")
+
         val search = TextField().apply {
             placeholder = "搜索"
             addValueChangeListener { that ->
@@ -100,8 +159,46 @@ class FileView(
             setWidthFull()
         }
 
-        add(bar, grid)
-
+        val pathComponents = base.toRelativeString(instance.path.toFile())
+            .replace('\\', '/')
+            .split("/")
+            .filterNot { it.isBlank() }
+            .toMutableList()
+        val fileNav by lazy {
+            Breadcrumb(
+                RouterLink(instance.getName(), FileView::class.java, RouteParameters(mapOf("id" to instanceId))),
+                *pathComponents.dropLast(1).map {
+                    RouterLink(
+                        it,
+                        FileView::class.java,
+                        RouteParameters(mapOf("id" to instanceId))
+                    ).apply {
+                        setQueryParameters(
+                            QueryParameters(
+                                mapOf(
+                                    "path" to listOf(
+                                        pathComponents.take(
+                                            pathComponents.indexOf(it) + 1
+                                        ).joinToString("/")
+                                    )
+                                )
+                            )
+                        )
+                    }
+                }.toTypedArray(),
+                Text(pathComponents.last())
+            ) { Span("/") }
+        }
+        add(
+            Breadcrumb(
+                RouterLink("我的应用", AppsView::class.java),
+                RouterLink(instance.getName(), ManageView::class.java, RouteParameters(mapOf("id" to instanceId))),
+                Text("文件管理")
+            ),
+            bar
+        )
+        if (pathComponents.isNotEmpty()) add(fileNav)
+        add(grid)
     }
 
 }
