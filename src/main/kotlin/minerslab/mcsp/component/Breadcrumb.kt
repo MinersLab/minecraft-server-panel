@@ -7,7 +7,8 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 
 @Tag("mcsp-breadcrumb")
-class Breadcrumb(vararg components: Component?, val icon: () -> Component = { Icon(VaadinIcon.ARROW_RIGHT) }) : VerticalLayout() {
+class Breadcrumb(vararg components: Component?, val icon: () -> Component = { Icon(VaadinIcon.ARROW_RIGHT) }) :
+    VerticalLayout() {
 
     init {
         components

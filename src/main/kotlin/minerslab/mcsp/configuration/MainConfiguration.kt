@@ -32,5 +32,5 @@ class MainConfiguration {
             }
         return Hocon.decodeFromConfig(ConfigFactory.parseFile(file))
     }
-    
+
 }

@@ -16,7 +16,7 @@ import minerslab.mcsp.repository.InstanceRepository
 
 @Route("app/new/", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
-class NewAppView(
+class CreateView(
     instanceRepository: InstanceRepository,
     authContext: AuthenticationContext
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
@@ -33,6 +33,7 @@ class NewAppView(
                 val config = instance.config
                 config.users.add(authContext.principalName.get())
                 config.name = name.value
+                config.createdAt = System.currentTimeMillis()
                 instance.config = config
                 UI.getCurrent().navigate("/apps")
             }

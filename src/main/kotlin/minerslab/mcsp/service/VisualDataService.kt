@@ -19,7 +19,7 @@ class VisualDataService : HandlerInterceptor {
     fun getRequestCountData() = requestCountData
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        requestCount ++
+        requestCount++
         return true
     }
 
@@ -33,7 +33,7 @@ class VisualDataService : HandlerInterceptor {
     @EventListener
     fun handleVaadinRequest(event: ServiceInitEvent) {
         event.addRequestHandler { _, _, _ ->
-            requestCount ++
+            requestCount++
             false
         }
     }

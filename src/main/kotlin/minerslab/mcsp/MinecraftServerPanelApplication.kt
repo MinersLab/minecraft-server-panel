@@ -22,25 +22,28 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @CssImport("./styles/index.css")
 class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator {
 
-	@Serializable
-	data class Config(val users: List<User> = listOf()) {
-		@Serializable
-		data class User(val name: String, val password: String, val roles: List<Role> = listOf(Role.USER)) {
-			@Serializable enum class Role { OWNER, ADMIN, USER }
-		}
-	}
+    @Serializable
+    data class Config(val users: List<User> = listOf()) {
+        @Serializable
+        data class User(val name: String, val password: String, val roles: List<Role> = listOf(Role.USER)) {
+            @Serializable
+            enum class Role { OWNER, ADMIN, USER }
+        }
+    }
 
-	val logger: Logger = LoggerFactory.getLogger(this::class.java)
-	@Autowired lateinit var config: Config
+    val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-	override fun run(args: ApplicationArguments) {
-		for (user in config.users) {
-			logger.info("User: ${user.roles} ${user.name}")
-		}
-	}
+    @Autowired
+    lateinit var config: Config
+
+    override fun run(args: ApplicationArguments) {
+        for (user in config.users) {
+            logger.info("User: ${user.roles} ${user.name}")
+        }
+    }
 
 }
 
 fun main(args: Array<String>) {
-	runApplication<MinecraftServerPanelApplication>(*args)
+    runApplication<MinecraftServerPanelApplication>(*args)
 }

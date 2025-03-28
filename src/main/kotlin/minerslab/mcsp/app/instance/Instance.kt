@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import minerslab.mcsp.util.createIfNotExists
 import java.io.File
 import java.nio.file.Path
-import java.util.UUID
+import java.util.*
 import kotlin.io.path.name
 
 class Instance(val path: Path) {
@@ -15,11 +15,9 @@ class Instance(val path: Path) {
         Json.encodeToString(InstanceConfig()).toByteArray()
     }
     val log = path.resolve(".mcsp.log").toFile().createIfNotExists()
-    var config: InstanceConfig = Json.decodeFromString<InstanceConfig>(configFile.readText())
-        set(value) {
-            field = value
-            configFile.writeText(Json.encodeToString(value))
-        }
+    var config: InstanceConfig
+        get() = Json.decodeFromString<InstanceConfig>(configFile.readText())
+        set(value) = configFile.writeText(Json.encodeToString(value))
 
 
     fun getName() = config.name

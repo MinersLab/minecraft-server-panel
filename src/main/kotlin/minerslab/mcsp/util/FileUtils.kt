@@ -5,7 +5,6 @@ import java.io.IOException
 import java.text.DecimalFormat
 
 
-
 fun File.createIfNotExists() = apply {
     if (!isFile) createNewFile()
 }

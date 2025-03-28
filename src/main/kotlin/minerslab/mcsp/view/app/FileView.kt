@@ -17,6 +17,7 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
+import minerslab.mcsp.app.instance.Instance
 import minerslab.mcsp.component.Breadcrumb
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
@@ -39,6 +40,12 @@ class FileView(
     private val instanceService: InstanceService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
+    private lateinit var event: BeforeEnterEvent
+    private lateinit var base: File
+    private lateinit var instanceId: String
+    private lateinit var instance: Instance
+    private lateinit var files: List<File>
+
     init {
         setHeightFull()
         isSpacing = false
@@ -47,58 +54,102 @@ class FileView(
 
     override fun beforeEnter(event: BeforeEnterEvent) {
         removeAll()
-        val instanceId = event.routeParameters.get("id").get()
-        val instance = instanceRepository.findById(UUID.fromString(instanceId))
-        val base = event.location.queryParameters.getSingleParameter("path")
-            .map { instance.path.toFile().getChildFile(it) }
-            .flatMap { if (it.isDirectory) Optional.of(it) else Optional.empty() }
-            .getOrElse { instance.path.toFile() }
+
+        this.event = event
+        instanceId = event.routeParameters.get("id").get()
+        instance = instanceRepository.findById(UUID.fromString(instanceId))
+        base = getBaseDirectory()
+        files = base.listFiles()?.filterNot { it.name.startsWith(".mcsp") }?.sortedByDescending { it.isDirectory }
+            ?.toMutableList() ?: mutableListOf()
 
         if (!instance.config.users.contains(authContext.principalName.get())) {
             event.rerouteToError(AccessDeniedException::class.java)
         }
 
-        fun goto(resolve: String) {
-            UI.getCurrent().navigate(
-                event.location.path,
-                event.location.queryParameters.merging(
-                    "path",
-                    base.resolve(resolve).toRelativeString(instance.path.toFile())
-                )
-            )
-            UI.getCurrent().refreshCurrentRoute(true)
-        }
+        val grid = createGrid(base)
+        val nameDialog = createNameDialog()
 
+        add(nameDialog)
+        add(createBar(grid))
+        addBreadcrumbs()
+        add(grid)
+    }
+
+    private fun getBaseDirectory(): File {
+        return event.location.queryParameters.getSingleParameter("path")
+            .map { instance.path.toFile().getChildFile(it) }
+            .flatMap { if (it.isDirectory) Optional.of(it) else Optional.empty() }
+            .getOrElse { instance.path.toFile() }
+    }
+
+    private fun createGrid(base: File): Grid<File> {
         val grid = Grid(File::class.java, false)
-        val files = base.listFiles()?.filterNot { it.name.startsWith(".mcsp") }?.sortedByDescending { it.isDirectory }?.toMutableList() ?: mutableListOf()
+
         grid.selectionMode = Grid.SelectionMode.MULTI
-        grid.addComponentColumn { that ->
-            Span(that.toRelativeString(base)).apply {
-                if (!that.isDirectory) return@apply
-                classNames += "mcsp-link"
-                addClickListener {
-                    goto(that.name)
-                }
-            }
-        }.setHeader("文件名")
-        grid.addColumn {
-            if (it.isDirectory) "文件夹"
-            else "${it.extension.uppercase()} 文件"
-        }.setHeader("类型")
-        grid.addColumn { LocalDateTime.ofInstant(Instant.ofEpochMilli(it.lastModified()), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")) }
-            .setHeader("修改时间")
+        grid.addComponentColumn { createFileNameColumn(it, base) }.setHeader("文件名")
+        grid.addColumn { getFileType(it) }.setHeader("类型")
+        grid.addColumn { getFileModificationTime(it) }.setHeader("修改时间")
         grid.isRowsDraggable = true
         grid.addColumn { formatFileSize(it.length()) }.setHeader("大小")
         grid.setItems(files)
         grid.setHeightFull()
+        grid.addComponentColumn { createActionColumn(it) }.setHeader("操作")
+        return grid
+    }
 
+    private fun createFileNameColumn(file: File, base: File): Span {
+        return Span(file.toRelativeString(base)).apply {
+            if (file.isDirectory) {
+                classNames += "mcsp-link"
+                addClickListener { goto(file.name) }
+            }
+        }
+    }
+
+    private fun getFileType(file: File): String {
+        return if (file.isDirectory) "文件夹" else "${file.extension.uppercase()} 文件"
+    }
+
+    private fun getFileModificationTime(file: File): String {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss"))
+    }
+
+    private fun createActionColumn(file: File): Div {
+        return Div().apply {
+            Button(Icon(VaadinIcon.EDIT)).apply {
+                setTooltipText("重命名")
+                addClickListener { openRenameDialog(file) }
+            }.also { add(it) }
+        }
+    }
+
+    private fun openRenameDialog(file: File) {
+        val nameDialog = createNameDialog()
+        nameDialog.headerTitle = "重命名 ${file.name}"
+        nameDialog.open()
+        nameDialog.addOpenedChangeListener {
+            if (!it.isOpened) {
+                val newFileName = nameDialog.getElement().getProperty("value")
+                if (newFileName.isNotBlank() && newFileName != file.name) {
+                    val status = file.renameTo(File(file.parentFile, newFileName))
+                    Notification.show(if (status) "已将 ${file.name} 重命名为 $newFileName" else "重命名失败")
+                        .addThemeVariants(
+                            if (status) NotificationVariant.LUMO_SUCCESS else NotificationVariant.LUMO_WARNING
+                        )
+                }
+                it.unregisterListener()
+                UI.getCurrent().refreshCurrentRoute(true)
+            }
+        }
+    }
+
+    private fun createNameDialog(): Dialog {
         var newFileName = ""
-        val nameDialog = Dialog().apply {
+        return Dialog().apply {
             isCloseOnEsc = false
             isCloseOnOutsideClick = false
-            val input = TextField().apply {
-                placeholder = "文件名"
-            }.also { add(it) }
+            val input = TextField().apply { placeholder = "文件名" }.also { add(it) }
             addOpenedChangeListener { if (it.isOpened) input.value = newFileName }
             footer.apply {
                 Button("确认").apply {
@@ -115,34 +166,10 @@ class FileView(
                     }
                 }.also { add(it) }
             }
-
         }
-        add(nameDialog)
+    }
 
-        grid.addComponentColumn { file ->
-            Div().apply {
-                Button(Icon(VaadinIcon.EDIT)).apply {
-                    setTooltipText("重命名")
-                    addClickListener {
-                        newFileName = file.name
-                        nameDialog.headerTitle = "重命名 ${file.name}"
-                        nameDialog.open()
-                        nameDialog.addOpenedChangeListener {
-                            if (it.isOpened) return@addOpenedChangeListener
-                            if (newFileName.isNotBlank() && newFileName != file.name) {
-                                val status = file.renameTo(File(file.parentFile, newFileName))
-                                Notification.show(if (status) "已将 ${file.name} 重命名为 $newFileName" else "重命名失败").addThemeVariants(
-                                    if (status) NotificationVariant.LUMO_SUCCESS else NotificationVariant.LUMO_WARNING
-                                )
-                            }
-                            it.unregisterListener()
-                            UI.getCurrent().refreshCurrentRoute(true)
-                        }
-                    }
-                }.also { add(it) }
-            }
-        }.setHeader("操作")
-
+    private fun createBar(grid: Grid<File>): HorizontalLayout {
         val search = TextField().apply {
             placeholder = "搜索"
             addValueChangeListener { that ->
@@ -150,7 +177,7 @@ class FileView(
             }
         }
 
-        val bar = HorizontalLayout().apply {
+        return HorizontalLayout().apply {
             isPadding = true
             isSpacing = true
             addToStart(Span("文件管理"))
@@ -158,7 +185,9 @@ class FileView(
             addToEnd(Button("新建"))
             setWidthFull()
         }
+    }
 
+    private fun addBreadcrumbs() {
         val pathComponents = base.toRelativeString(instance.path.toFile())
             .replace('\\', '/')
             .split("/")
@@ -186,7 +215,7 @@ class FileView(
                         )
                     }
                 }.toTypedArray(),
-                Text(pathComponents.last())
+                pathComponents.lastOrNull()?.let { Text(it) }
             ) { Span("/") }
         }
         add(
@@ -195,10 +224,18 @@ class FileView(
                 RouterLink(instance.getName(), ManageView::class.java, RouteParameters(mapOf("id" to instanceId))),
                 Text("文件管理")
             ),
-            bar
+            fileNav
         )
-        if (pathComponents.isNotEmpty()) add(fileNav)
-        add(grid)
     }
 
+    private fun goto(resolve: String) {
+        UI.getCurrent().navigate(
+            event.location.path,
+            event.location.queryParameters.merging(
+                "path",
+                base.resolve(resolve).toRelativeString(instance.path.toFile())
+            )
+        )
+        UI.getCurrent().refreshCurrentRoute(true)
+    }
 }

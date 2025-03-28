@@ -2,19 +2,17 @@ package minerslab.mcsp.view.app
 
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.router.AccessDeniedException
-import com.vaadin.flow.router.BeforeEnterEvent
-import com.vaadin.flow.router.BeforeEnterObserver
-import com.vaadin.flow.router.Route
-import com.vaadin.flow.router.RouterLayout
+import com.vaadin.flow.router.*
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
+import minerslab.mcsp.util.row
 import java.util.*
 
 @Route("/apps/:id/config", layout = MainLayout::class)
@@ -33,19 +31,49 @@ class ConfigView(
         }
         val config = instance.config
         val name = TextField("实例名") { config.name = it.value }.apply { value = config.name }
-        val inputCharset = TextField("输入编码") { config.inputCharset = it.value }.apply { value = config.inputCharset }
-        val outputCharset = TextField("输出编码") { config.outputCharset = it.value }.apply { value = config.inputCharset }
-        val launchCommandLine = TextField("运行命令") { config.launchCommandLine = it.value }.apply { value = config.launchCommandLine }
+
+        val inputCharset =
+            TextField("输入编码") { config.inputCharset = it.value }.apply { value = config.inputCharset }
+        val outputCharset =
+            TextField("输出编码") { config.outputCharset = it.value }.apply { value = config.inputCharset }
+        val coloredTerminal = Select<Boolean>().apply {
+            setItems(true, false)
+            label = "彩色终端"
+            setItemLabelGenerator { if (it) "是" else "否" }
+            setItemEnabledProvider { true }
+            value = config.coloredTerminal
+            addValueChangeListener { config.coloredTerminal = it.value }
+        }
+        val headlessMode = Select<Boolean>().apply {
+            setItems(true, false)
+            label = "无头模式"
+            setItemLabelGenerator { if (it) "是" else "否" }
+            setItemEnabledProvider { true }
+            value = config.headless
+            addValueChangeListener { config.headless = it.value }
+        }
+
+        val launchCommandLine =
+            TextField("运行命令") { config.launchCommandLine = it.value }.apply { value = config.launchCommandLine }
         val stopCommand = TextField("终止指令") { config.stopCommand = it.value }.apply { value = config.stopCommand }
-        val charsets = HorizontalLayout().apply { add(inputCharset, outputCharset) }
-        val commands = HorizontalLayout().apply { add(launchCommandLine, stopCommand) }
+
+        val backButton = Button("返回").apply {
+            addClickListener { UI.getCurrent().navigate("/apps/$instanceId/manage") }
+        }
         val save = Button("保存").apply {
             addClickListener {
                 instance.config = config
                 UI.getCurrent().navigate("/apps/$instanceId/manage")
             }
+            addThemeVariants(ButtonVariant.LUMO_SUCCESS)
         }
-        add(name, charsets, commands, save)
+        add(
+            name,
+            row(inputCharset, outputCharset),
+            row(coloredTerminal, headlessMode),
+            row(launchCommandLine, stopCommand),
+            row(backButton, save)
+        )
     }
 
 }
