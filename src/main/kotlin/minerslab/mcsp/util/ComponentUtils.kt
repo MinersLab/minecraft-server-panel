@@ -6,6 +6,7 @@ import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.shared.SlotUtils
 import kotlin.reflect.KProperty
 
@@ -49,4 +50,11 @@ fun createIcon(vaadinIcon: VaadinIcon): Icon {
     val icon = Icon(vaadinIcon)
     icon.style.set("padding", "var(--lumo-space-xs)")
     return icon
+}
+
+fun createSelectionCheckbox(labelText: String) = Select<Boolean>().apply {
+    setItems(true, false)
+    label = labelText
+    setItemLabelGenerator { if (it) "是" else "否" }
+    setItemEnabledProvider { true }
 }

@@ -10,3 +10,17 @@
 .mcsp-link {
     transition: color 0.1s ease-in;
 }
+
+.mcsp-inline-card {
+    cursor: pointer;
+}
+
+.mcsp-inline-card:hover {
+    --vaadin-card-border-width: 4px;
+}
+
+.mcsp-inline-card-icon {
+    position: absolute;
+    right: 1em;
+    bottom: 1em;
+}

@@ -6,8 +6,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import minerslab.mcsp.app.instance.Instance
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.service.instance.InstanceEventService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Component
 import java.util.*
@@ -15,7 +17,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Component
-class InstanceService(private val instanceRepository: InstanceRepository) : DisposableBean {
+class InstanceService(
+    private val instanceRepository: InstanceRepository,
+    private val beanFactory: BeanFactory
+) : DisposableBean {
+
+    private val instanceEventService by lazy { beanFactory.getBean(InstanceEventService::class.java) }
 
     enum class InstanceStatus(val statusName: String, val color: String, val isRunning: Boolean = false) {
         STOPPED("未运行", "contrast"),
@@ -31,8 +38,10 @@ class InstanceService(private val instanceRepository: InstanceRepository) : Disp
     override fun destroy(): Unit = runBlocking {
         instanceRepository.findAll().map {
             async {
+                val name = it.getName()
+                log.info("Disposing: $name")
                 stop(it)
-                log.info("Disposed: ${it.getName()}")
+                log.info("Disposed: $name")
             }
         }.awaitAll()
     }
@@ -41,7 +50,9 @@ class InstanceService(private val instanceRepository: InstanceRepository) : Disp
     private val instanceStatus = mutableMapOf<UUID, InstanceStatus>()
 
     fun getStatus(instance: Instance) = instanceStatus[instance.id] ?: InstanceStatus.STOPPED
+    fun setStatus(instance: Instance, status: InstanceStatus) = instanceStatus.put(instance.id, status)
     fun get(instance: Instance) = processPool[instance.id]
+
 
     fun run(instance: Instance): Process {
         instance.config = instance.config.run {
@@ -64,7 +75,14 @@ class InstanceService(private val instanceRepository: InstanceRepository) : Disp
             }
             .start()
         instanceStatus[instance.id] = InstanceStatus.RUNNING
-        process.onExit().handle { _, _ -> instanceStatus[instance.id] = InstanceStatus.STOPPED }
+        process.onExit().handle { _, _ ->
+            log.info("Instance ${instance.getName()} @ ${process.pid()} exited")
+            val status = instanceStatus[instance.id]?.isRunning == true
+            instanceStatus[instance.id] = InstanceStatus.STOPPED
+            if (status) runBlocking {
+                instanceEventService.restart(instance)
+            }
+        }
         processPool[instance.id] = process
         return process
     }
@@ -77,6 +95,7 @@ class InstanceService(private val instanceRepository: InstanceRepository) : Disp
     }
 
     suspend fun stop(instance: Instance, force: Boolean = false, restart: Boolean = false) =
+        if (getStatus(instance) != InstanceStatus.RUNNING && getStatus(instance) != InstanceStatus.RESTARTING) Unit else
         suspendCoroutine { continuation ->
             instanceStatus[instance.id] = if (restart) InstanceStatus.RESTARTING else InstanceStatus.STOPPING
             if (force || instance.config.stopCommand == "<mcsp:force-stop>") {

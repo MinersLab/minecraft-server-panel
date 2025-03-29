@@ -5,6 +5,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator
 import com.vaadin.flow.theme.Theme
 import com.vaadin.flow.theme.lumo.Lumo
 import kotlinx.serialization.Serializable
+import minerslab.mcsp.service.instance.InstanceEventService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,6 +32,8 @@ class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator 
         }
     }
 
+    @Autowired
+    private lateinit var instanceEventService: InstanceEventService
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     @Autowired
@@ -40,6 +43,7 @@ class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator 
         for (user in config.users) {
             logger.info("User: ${user.roles} ${user.name}")
         }
+        instanceEventService.start()
     }
 
 }

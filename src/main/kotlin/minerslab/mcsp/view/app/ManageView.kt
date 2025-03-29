@@ -1,15 +1,11 @@
 package minerslab.mcsp.view.app
 
-import com.vaadin.flow.component.Html
-import com.vaadin.flow.component.Text
-import com.vaadin.flow.component.UI
+import com.vaadin.flow.component.*
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dependency.JavaScript
-import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.html.Paragraph
-import com.vaadin.flow.component.html.Pre
-import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.dialog.Dialog
+import com.vaadin.flow.component.html.*
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -20,9 +16,7 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
 import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import minerslab.mcsp.app.instance.Instance
 import minerslab.mcsp.component.Badge
 import minerslab.mcsp.component.Breadcrumb
@@ -31,6 +25,7 @@ import minerslab.mcsp.component.Interval
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
+import minerslab.mcsp.service.instance.InstanceEventService
 import minerslab.mcsp.util.*
 import java.io.FileOutputStream
 import java.nio.charset.Charset
@@ -43,7 +38,8 @@ import kotlin.math.max
 class ManageView(
     private val instanceRepository: InstanceRepository,
     private val authContext: AuthenticationContext,
-    private val instanceService: InstanceService
+    private val instanceService: InstanceService,
+    private val instanceEventService: InstanceEventService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
     private val commandHistory = mutableListOf<String>()
@@ -168,6 +164,7 @@ class ManageView(
     }
 
     private fun createControlButtons(instance: Instance): Array<Button> {
+        val ui = UI.getCurrent()
         val startButton = Button("运行").apply {
             isVisible = instanceService.get(instance)?.isAlive != true
             addClickListener {
@@ -185,16 +182,16 @@ class ManageView(
                             Charset.forName(instance.config.outputCharset)
                         )
                     }
-                UI.getCurrent().refreshCurrentRoute(false)
+                ui.refreshCurrentRoute(false)
             }
         }
         val stopButton = Button("关闭").apply {
             isVisible = instanceService.getStatus(instance).isRunning
             addClickListener {
                 log(instance, "[MCSP] 关闭中...\n", Charset.forName(instance.config.outputCharset))
-                CoroutineScope(Dispatchers.Default).async {
+                runBlocking {
                     instanceService.stop(instance)
-                }.invokeOnCompletion { UI.getCurrent().refreshCurrentRoute(false) }
+                }
             }
         }
 
@@ -203,9 +200,9 @@ class ManageView(
             addThemeVariants(ButtonVariant.LUMO_CONTRAST)
             addClickListener {
                 log(instance, "[MCSP] 重启中...\n", Charset.forName(instance.config.outputCharset))
-                CoroutineScope(Dispatchers.Default).async {
+                runBlocking {
                     instanceService.restart(instance)
-                }.invokeOnCompletion { UI.getCurrent().refreshCurrentRoute(false) }
+                }
             }
         }
 
@@ -214,9 +211,9 @@ class ManageView(
             addThemeVariants(ButtonVariant.LUMO_ERROR)
             addClickListener {
                 log(instance, "[MCSP] 终止中...\n", Charset.forName(instance.config.outputCharset))
-                CoroutineScope(Dispatchers.Default).async {
+                runBlocking {
                     instanceService.stop(instance, true)
-                }.invokeOnCompletion { UI.getCurrent().refreshCurrentRoute(false) }
+                }
             }
         }
 
@@ -224,17 +221,46 @@ class ManageView(
     }
 
     private fun createManageButtons(instance: Instance): HorizontalLayout {
-        val configButton = Button("配置").apply {
-            addClickListener {
-                UI.getCurrent().navigate("/apps/${instance.id}/config")
-            }
+        val configButton = createInlineCard(
+            { UI.getCurrent().navigate("/apps/${instance.id}/config") },
+            { Icon(VaadinIcon.EDIT) }
+        ) {
+            title = Div("实例设置")
         }
-        val fileButton = Button("文件").apply {
-            addClickListener {
-                UI.getCurrent().navigate("/apps/${instance.id}/file/")
-            }
+        val fileButton = createInlineCard(
+            { UI.getCurrent().navigate("/apps/${instance.id}/file/") },
+            { Icon(VaadinIcon.FOLDER) }
+        ) {
+            title = Div("文件管理")
         }
-        return row(configButton, fileButton)
+        val eventDialog = createEventDialog(instance)
+        val eventButton = createInlineCard(
+            { eventDialog.open() },
+            { Icon(VaadinIcon.ALARM) }
+        ) {
+            title = Div("事件任务")
+        }
+        return row(configButton, fileButton, eventButton)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createInlineCard(onClick: (ClickEvent<Anchor>) -> Unit, icon: (() -> Icon)? = null, callback: Card.() -> Unit): Anchor {
+        val card = Card().apply(callback)
+        card.setHeightFull()
+        card.setWidthFull()
+        val anchor = Anchor()
+        card.addClassName("mcsp-inline-card")
+        card.add(Paragraph("前往 ->").apply { style["color"] = "var(--lumo-primary-text-color)" })
+        if (icon != null) card.add(
+            icon().apply { addClassName("mcsp-inline-card-icon") }
+        )
+        anchor.add(card)
+        anchor.setWidthFull()
+        anchor.setHeightFull()
+        ComponentUtil.addListener(anchor, ClickEvent::class.java) {
+            onClick(it as ClickEvent<Anchor>)
+        }
+        return anchor
     }
 
     private fun log(instance: Instance, content: String, charset: Charset) {
@@ -264,4 +290,37 @@ class ManageView(
             }
         }.apply { timeout = 1000 }
     }
+
+    private fun createEventDialog(instance: Instance) = Dialog().apply {
+        headerTitle = "事件管理"
+        var config: InstanceEventService.InstanceEventConfig? = null
+        addOpenedChangeListener {
+            removeAll()
+            if (!it.isOpened) {
+                config = null
+                return@addOpenedChangeListener
+            }
+            config = instanceEventService.getConfig(instance)
+            createSelectionCheckbox("自动重启").apply {
+                value = config?.autoRestart ?: false
+                addValueChangeListener { event -> config?.autoRestart = event.value }
+            }.also { box -> add(row(box)) }
+            createSelectionCheckbox("自动启动").apply {
+                value = config?.autoStart ?: false
+                addValueChangeListener { event -> config?.autoStart = event.value }
+            }.also { box -> add(row(box)) }
+        }
+        val saveButton = Button("保存").apply {
+            addClickListener {
+                if (config != null) instanceEventService.setConfig(instance, config!!)
+                close()
+            }
+            addThemeVariants(ButtonVariant.LUMO_SUCCESS)
+        }
+        val closeButton = Button("关闭").apply {
+            addClickListener { close() }
+        }
+        footer.add(row(closeButton, saveButton))
+    }
+
 }

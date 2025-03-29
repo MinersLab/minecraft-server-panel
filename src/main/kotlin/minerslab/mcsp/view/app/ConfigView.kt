@@ -4,7 +4,6 @@ import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
 import com.vaadin.flow.spring.security.AuthenticationContext
@@ -12,6 +11,7 @@ import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
+import minerslab.mcsp.util.createSelectionCheckbox
 import minerslab.mcsp.util.row
 import java.util.*
 
@@ -36,19 +36,11 @@ class ConfigView(
             TextField("输入编码") { config.inputCharset = it.value }.apply { value = config.inputCharset }
         val outputCharset =
             TextField("输出编码") { config.outputCharset = it.value }.apply { value = config.inputCharset }
-        val coloredTerminal = Select<Boolean>().apply {
-            setItems(true, false)
-            label = "彩色终端"
-            setItemLabelGenerator { if (it) "是" else "否" }
-            setItemEnabledProvider { true }
+        val coloredTerminal = createSelectionCheckbox("彩色终端").apply {
             value = config.coloredTerminal
             addValueChangeListener { config.coloredTerminal = it.value }
         }
-        val headlessMode = Select<Boolean>().apply {
-            setItems(true, false)
-            label = "无头模式"
-            setItemLabelGenerator { if (it) "是" else "否" }
-            setItemEnabledProvider { true }
+        val headlessMode = createSelectionCheckbox("无头模式").apply {
             value = config.headless
             addValueChangeListener { config.headless = it.value }
         }
