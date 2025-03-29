@@ -34,7 +34,7 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
 
-	api("com.github.oshi:oshi-core:6.7.1")
+	api("com.github.oshi:oshi-core:6.8.0")
 	api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
