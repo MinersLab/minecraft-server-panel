@@ -21,12 +21,19 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableWebMvc
 @Theme("mcsp", variant = Lumo.DARK)
 @CssImport("./styles/index.css")
-class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator {
-
+class MinecraftServerPanelApplication :
+    ApplicationRunner,
+    AppShellConfigurator {
     @Serializable
-    data class Config(val users: List<User> = listOf()) {
+    data class Config(
+        val users: List<User> = listOf(),
+    ) {
         @Serializable
-        data class User(val name: String, val password: String, val roles: List<Role> = listOf(Role.USER)) {
+        data class User(
+            val name: String,
+            val password: String,
+            val roles: List<Role> = listOf(Role.USER),
+        ) {
             @Serializable
             enum class Role { OWNER, ADMIN, USER }
         }
@@ -45,7 +52,6 @@ class MinecraftServerPanelApplication : ApplicationRunner, AppShellConfigurator 
         }
         instanceEventService.start()
     }
-
 }
 
 fun main(args: Array<String>) {

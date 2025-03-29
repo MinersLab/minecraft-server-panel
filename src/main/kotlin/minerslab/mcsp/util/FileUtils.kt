@@ -4,26 +4,29 @@ import java.io.File
 import java.io.IOException
 import java.text.DecimalFormat
 
-
-fun File.createIfNotExists() = apply {
-    if (!isFile) createNewFile()
-}
-
-fun File.createIfNotExists(content: () -> ByteArray) = apply {
-    if (!isFile) {
-        createNewFile()
-        writeBytes(content())
+fun File.createIfNotExists() =
+    apply {
+        if (!isFile) createNewFile()
     }
-}
+
+fun File.createIfNotExists(content: () -> ByteArray) =
+    apply {
+        if (!isFile) {
+            createNewFile()
+            writeBytes(content())
+        }
+    }
 
 fun File.getChildFile(path: String): File {
     val file = File(this, path).normalize()
-    if (!file.startsWith(this)) throw IOException()
-    else return file
+    if (!file.startsWith(this)) {
+        throw IOException()
+    } else {
+        return file
+    }
 }
 
 object FileSizeUtil {
-
     private const val K_SIZE: Int = 1024
     private const val M_SIZE: Int = 1048576
     private const val G_SIZE: Int = 1073741824

@@ -10,35 +10,52 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.shared.SlotUtils
 import kotlin.reflect.KProperty
 
+class Slot(
+    private val name: String? = null,
+) {
+    operator fun getValue(
+        thisRef: HasElement,
+        property: KProperty<*>,
+    ): Component = SlotUtils.getChildInSlot(thisRef, name ?: property.name)
 
-class Slot(private val name: String? = null) {
-
-    operator fun getValue(thisRef: HasElement, property: KProperty<*>): Component {
-        return SlotUtils.getChildInSlot(thisRef, name ?: property.name)
-    }
-
-    operator fun setValue(thisRef: HasElement, property: KProperty<*>, value: Component) {
+    operator fun setValue(
+        thisRef: HasElement,
+        property: KProperty<*>,
+        value: Component,
+    ) {
         SlotUtils.setSlot(thisRef, name ?: property.name, value)
     }
-
 }
 
 fun slot(name: String? = null) = Slot(name)
 
-fun alignRow(left: Component, right: Component, spacing: Boolean = true, fullWidth: Boolean = true) =
-    row(spacing = spacing, fullWidth = fullWidth).apply {
-        addToStart(left)
-        addToEnd(right)
-    }
+fun alignRow(
+    left: Component,
+    right: Component,
+    spacing: Boolean = true,
+    fullWidth: Boolean = true,
+) = row(spacing = spacing, fullWidth = fullWidth).apply {
+    addToStart(left)
+    addToEnd(right)
+}
 
-fun alignRow(left: Component, middle: Component, right: Component, spacing: Boolean = true, fullWidth: Boolean = true) =
-    row(spacing = spacing, fullWidth = fullWidth).apply {
-        addToStart(left)
-        addToMiddle(middle)
-        addToEnd(right)
-    }
+fun alignRow(
+    left: Component,
+    middle: Component,
+    right: Component,
+    spacing: Boolean = true,
+    fullWidth: Boolean = true,
+) = row(spacing = spacing, fullWidth = fullWidth).apply {
+    addToStart(left)
+    addToMiddle(middle)
+    addToEnd(right)
+}
 
-fun row(vararg components: Component?, spacing: Boolean = true, fullWidth: Boolean = true) = HorizontalLayout().apply {
+fun row(
+    vararg components: Component?,
+    spacing: Boolean = true,
+    fullWidth: Boolean = true,
+) = HorizontalLayout().apply {
     isSpacing = spacing
     if (fullWidth) setWidthFull()
     add(*components.filterNotNull().toTypedArray())
@@ -52,9 +69,10 @@ fun createIcon(vaadinIcon: VaadinIcon): Icon {
     return icon
 }
 
-fun createSelectionCheckbox(labelText: String) = Select<Boolean>().apply {
-    setItems(true, false)
-    label = labelText
-    setItemLabelGenerator { if (it) "是" else "否" }
-    setItemEnabledProvider { true }
-}
+fun createSelectionCheckbox(labelText: String) =
+    Select<Boolean>().apply {
+        setItems(true, false)
+        label = labelText
+        setItemLabelGenerator { if (it) "是" else "否" }
+        setItemEnabledProvider { true }
+    }

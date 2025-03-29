@@ -15,16 +15,18 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @EnableWebSecurity
 @Configuration
-class SecurityConfiguration(private val appConfig: MinecraftServerPanelApplication.Config) : VaadinWebSecurity() {
+class SecurityConfiguration(
+    private val appConfig: MinecraftServerPanelApplication.Config,
+) : VaadinWebSecurity() {
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-
         http.rememberMe {
             it.alwaysRemember(true)
         }
 
         http.authorizeHttpRequests { auth ->
-            auth.requestMatchers(AntPathRequestMatcher("/public/**"))
+            auth
+                .requestMatchers(AntPathRequestMatcher("/public/**"))
                 .permitAll()
         }
 
@@ -40,12 +42,14 @@ class SecurityConfiguration(private val appConfig: MinecraftServerPanelApplicati
 
     @Bean
     fun userDetailsService(): UserDetailsManager {
-        val users = appConfig.users.map {
-            User.withUsername(it.name)
-                .roles(*it.roles.map(Enum<*>::name).toTypedArray())
-                .password("{noop}${it.password}")
-                .build()
-        }
+        val users =
+            appConfig.users.map {
+                User
+                    .withUsername(it.name)
+                    .roles(*it.roles.map(Enum<*>::name).toTypedArray())
+                    .password("{noop}${it.password}")
+                    .build()
+            }
         return InMemoryUserDetailsManager(*users.toTypedArray())
     }
 }

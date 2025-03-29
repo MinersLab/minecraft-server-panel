@@ -15,26 +15,29 @@ import minerslab.mcsp.layout.MainLayout
 
 @Route("login", layout = MainLayout::class)
 @AnonymousAllowed
-class LoginView : VerticalLayout(), HasDynamicTitle, BeforeEnterObserver {
-
+class LoginView :
+    VerticalLayout(),
+    HasDynamicTitle,
+    BeforeEnterObserver {
     override fun getPageTitle() = "登录"
 
-    private val login = LoginForm(
-        LoginI18n.createDefault().apply {
-            errorMessage.apply {
-                title = "登录失败"
-                username = "未输入用户名"
-                password = "未输入密码"
-                message = "请检查您是否输入了正确的用户名和密码，然后重试。"
-            }
-            form.apply {
-                title = "登录"
-                password = "密码"
-                username = "用户名"
-                submit = "提交"
-            }
-        }
-    )
+    private val login =
+        LoginForm(
+            LoginI18n.createDefault().apply {
+                errorMessage.apply {
+                    title = "登录失败"
+                    username = "未输入用户名"
+                    password = "未输入密码"
+                    message = "请检查您是否输入了正确的用户名和密码，然后重试。"
+                }
+                form.apply {
+                    title = "登录"
+                    password = "密码"
+                    username = "用户名"
+                    submit = "提交"
+                }
+            },
+        )
 
     init {
         addClassName("login-view")
@@ -50,7 +53,9 @@ class LoginView : VerticalLayout(), HasDynamicTitle, BeforeEnterObserver {
     }
 
     override fun beforeEnter(beforeEnterEvent: BeforeEnterEvent) {
-        if (beforeEnterEvent.location.queryParameters.parameters.containsKey("error")) {
+        if (beforeEnterEvent.location.queryParameters.parameters
+                .containsKey("error")
+        ) {
             login.isError = true
         }
     }

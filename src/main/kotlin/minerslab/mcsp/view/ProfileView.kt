@@ -14,8 +14,9 @@ import minerslab.mcsp.layout.MainLayout
 
 @Route("/profile", layout = MainLayout::class)
 @PermitAll
-class ProfileView(authContext: AuthenticationContext) : VerticalLayout() {
-
+class ProfileView(
+    authContext: AuthenticationContext,
+) : VerticalLayout() {
     init {
         style["padding"] = "2rem"
         add(
@@ -30,8 +31,7 @@ class ProfileView(authContext: AuthenticationContext) : VerticalLayout() {
             Button("退出登录").apply {
                 addClickListener { authContext.logout() }
                 addThemeVariants(ButtonVariant.LUMO_ERROR)
-            }
+            },
         )
     }
-
 }

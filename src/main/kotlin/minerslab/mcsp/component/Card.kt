@@ -15,8 +15,11 @@ import minerslab.mcsp.util.slot
 @JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
 @NpmPackage(value = "@vaadin/card", version = "^24.7")
 @JsModule("@vaadin/card/src/vaadin-card.js")
-class Card : Component(), HasSize, HasThemeVariant<CardVariant>, HasComponents {
-
+class Card :
+    Component(),
+    HasSize,
+    HasThemeVariant<CardVariant>,
+    HasComponents {
     var title by slot()
     var subtitle by slot()
     var media by slot()
@@ -24,5 +27,4 @@ class Card : Component(), HasSize, HasThemeVariant<CardVariant>, HasComponents {
     var footer by slot()
     var headerSuffix by slot()
     var header by slot()
-
 }

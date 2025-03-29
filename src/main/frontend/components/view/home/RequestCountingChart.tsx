@@ -12,16 +12,16 @@ function processData(data: number[]): EChartsOption {
             text: "接口请求数量"
         },
         xAxis: {
-            type: 'category',
+            type: "category",
             data: new Array(data.length).fill(null).map((_, index) => 59 - index * 3 + "s")
         },
         yAxis: {
-            type: 'value'
+            type: "value"
         },
         series: [
             {
                 data: data,
-                type: 'line',
+                type: "line",
                 smooth: false
             }
         ]
@@ -51,4 +51,4 @@ class McspRequestCountingChart extends ReactAdapterElement {
 }
 
 // @ts-ignore
-customElements.define('mcsp-home-request-counting-chart', McspRequestCountingChart);
+customElements.define("mcsp-home-request-counting-chart", McspRequestCountingChart);

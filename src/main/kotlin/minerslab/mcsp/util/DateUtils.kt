@@ -7,5 +7,4 @@ import java.time.format.DateTimeFormatter
 
 val DATETIME_FORMAT_1: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-fun toLocalDateTime(epochMilli: Long): LocalDateTime =
-    LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault())
+fun toLocalDateTime(epochMilli: Long): LocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault())

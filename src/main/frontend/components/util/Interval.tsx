@@ -6,6 +6,7 @@ export class McspInterval extends ReactAdapterElement {
 
     // @ts-ignore
     override render(hooks: RenderHooks): ReactElement | null {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [timeout, _] = hooks.useState<number>("timeout");
         const [times, setTimes] = hooks.useState<number>("times", 0);
         useEffect(() => {

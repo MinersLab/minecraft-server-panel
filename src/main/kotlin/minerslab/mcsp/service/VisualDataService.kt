@@ -9,16 +9,18 @@ import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import java.util.concurrent.TimeUnit
 
-
 @Component
 class VisualDataService : HandlerInterceptor {
-
     private var requestCount: Int = 0
     private val requestCountData = generateSequence { 0 }.take(20).toMutableList()
 
     fun getRequestCountData() = requestCountData
 
-    override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
+    override fun preHandle(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        handler: Any,
+    ): Boolean {
         requestCount++
         return true
     }
@@ -37,5 +39,4 @@ class VisualDataService : HandlerInterceptor {
             false
         }
     }
-
 }

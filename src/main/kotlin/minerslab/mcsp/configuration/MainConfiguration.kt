@@ -15,22 +15,23 @@ import kotlin.io.path.pathString
 
 @Configuration
 class MainConfiguration {
-
     @Bean
-    fun appPath(): Path = Path.of(System.getProperty("user.dir"), ".mcsp").apply {
-        if (!isDirectory()) createDirectory()
-    }
+    fun appPath(): Path =
+        Path.of(System.getProperty("user.dir"), ".mcsp").apply {
+            if (!isDirectory()) createDirectory()
+        }
 
     @OptIn(ExperimentalSerializationApi::class)
     @Bean
     fun appFileConfig(): MinecraftServerPanelApplication.Config {
         val path = appPath()
-        val file = Path.of(path.pathString, "mcsp.conf")
-            .toFile()
-            .createIfNotExists {
-                this::class.java.getResourceAsStream("/config/mcsp.conf")?.readBytes() ?: byteArrayOf()
-            }
+        val file =
+            Path
+                .of(path.pathString, "mcsp.conf")
+                .toFile()
+                .createIfNotExists {
+                    this::class.java.getResourceAsStream("/config/mcsp.conf")?.readBytes() ?: byteArrayOf()
+                }
         return Hocon.decodeFromConfig(ConfigFactory.parseFile(file))
     }
-
 }

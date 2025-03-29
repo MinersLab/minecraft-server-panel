@@ -1,7 +1,7 @@
-import {ReactElement} from 'react';
+import {ReactElement} from "react";
 // @ts-ignore
-import {ReactAdapterElement, type RenderHooks} from 'Frontend/generated/flow/ReactAdapter';
-import ReactECharts, {EChartsOption} from 'echarts-for-react';
+import {ReactAdapterElement, type RenderHooks} from "Frontend/generated/flow/ReactAdapter";
+import ReactECharts, {EChartsOption} from "echarts-for-react";
 import * as echarts from "echarts";
 
 export const theme =
@@ -415,4 +415,4 @@ class McspChart extends ReactAdapterElement {
 }
 
 // @ts-ignore
-customElements.define('mcsp-chart', McspChart);
+customElements.define("mcsp-chart", McspChart);

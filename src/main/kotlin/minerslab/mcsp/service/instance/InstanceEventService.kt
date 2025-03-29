@@ -16,21 +16,28 @@ import org.springframework.stereotype.Component
 @Component
 class InstanceEventService(
     private val instanceRepository: InstanceRepository,
-    private val beanFactory: BeanFactory
+    private val beanFactory: BeanFactory,
 ) {
-
     private val instanceService by lazy { beanFactory.getBean(InstanceService::class.java) }
 
     @Serializable
-    data class InstanceEventConfig(var autoRestart: Boolean = false, var autoStart: Boolean = false)
+    data class InstanceEventConfig(
+        var autoRestart: Boolean = false,
+        var autoStart: Boolean = false,
+    )
 
-    fun getConfigFile(instance: Instance) = instance.path.resolve(".mcsp.event.json").toFile().createIfNotExists {
-        Json.encodeToString(InstanceEventConfig()).toByteArray()
-    }
+    fun getConfigFile(instance: Instance) =
+        instance.path.resolve(".mcsp.event.json").toFile().createIfNotExists {
+            Json.encodeToString(InstanceEventConfig()).toByteArray()
+        }
 
     @OptIn(ExperimentalSerializationApi::class)
     fun getConfig(instance: Instance) = Json.decodeFromStream<InstanceEventConfig>(getConfigFile(instance).inputStream())
-    fun setConfig(instance: Instance, config: InstanceEventConfig) = getConfigFile(instance).writeBytes(Json.encodeToString(config).toByteArray())
+
+    fun setConfig(
+        instance: Instance,
+        config: InstanceEventConfig,
+    ) = getConfigFile(instance).writeBytes(Json.encodeToString(config).toByteArray())
 
     fun start() {
         instanceRepository.findAll().forEach {
@@ -43,7 +50,8 @@ class InstanceEventService(
             instanceService.setStatus(instance, InstanceService.InstanceStatus.RESTARTING)
             delay(5000)
             instanceService.run(instance)
-        } else instanceService.setStatus(instance, InstanceService.InstanceStatus.STOPPED)
+        } else {
+            instanceService.setStatus(instance, InstanceService.InstanceStatus.STOPPED)
+        }
     }
-
 }

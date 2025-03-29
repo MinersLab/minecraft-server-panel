@@ -6,7 +6,6 @@ import com.vaadin.flow.component.html.Span
 
 @Tag("mcsp-badge")
 class Badge : Span {
-
     constructor(vararg components: Component, classes: String = "") : super(*components) {
         element.themeList.add("badge $classes")
     }
@@ -14,5 +13,4 @@ class Badge : Span {
     constructor(text: String, classes: String = "") : super(text) {
         element.themeList.add("badge $classes")
     }
-
 }

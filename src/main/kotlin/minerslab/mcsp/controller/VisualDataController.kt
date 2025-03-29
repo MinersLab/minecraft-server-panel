@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class VisualDataController(
-    private val visualDataService: VisualDataService
+    private val visualDataService: VisualDataService,
 ) {
-
     @RequestMapping("/api/visual-data/request-count", consumes = [MediaType.ALL_VALUE])
-    fun getRequestCountData(authContext: AuthenticationContext): ResponseEntity<MutableList<Int>> {
-        return if (authContext.hasAnyRole("OWNER", "ADMIN")) ResponseEntity.ok(visualDataService.getRequestCountData())
-        else ResponseEntity.status(403).build()
-    }
-
+    fun getRequestCountData(authContext: AuthenticationContext): ResponseEntity<MutableList<Int>> =
+        if (authContext.hasAnyRole("OWNER", "ADMIN")) {
+            ResponseEntity.ok(visualDataService.getRequestCountData())
+        } else {
+            ResponseEntity.status(403).build()
+        }
 }

@@ -16,28 +16,29 @@ import minerslab.mcsp.repository.InstanceRepository
 @RolesAllowed("ADMIN")
 class CreateView(
     instanceRepository: InstanceRepository,
-    authContext: AuthenticationContext
-) : VerticalLayout(), RouterLayout {
-
+    authContext: AuthenticationContext,
+) : VerticalLayout(),
+    RouterLayout {
     init {
         isPadding = true
-        val name = TextField("实例名称").apply {
-            placeholder = "默认名称"
-        }
-        val confirm = Button("创建实例").apply {
-            addClickListener {
-                val instance = instanceRepository.addInstance()
-                if (name.value.trim().isEmpty()) name.value = instance.getName()
-                val config = instance.config
-                config.users.add(authContext.principalName.get())
-                config.name = name.value
-                config.createdAt = System.currentTimeMillis()
-                instance.config = config
-                UI.getCurrent().navigate("/apps")
+        val name =
+            TextField("实例名称").apply {
+                placeholder = "默认名称"
             }
-            addThemeVariants(ButtonVariant.LUMO_WARNING)
-        }
+        val confirm =
+            Button("创建实例").apply {
+                addClickListener {
+                    val instance = instanceRepository.addInstance()
+                    if (name.value.trim().isEmpty()) name.value = instance.getName()
+                    val config = instance.config
+                    config.users.add(authContext.principalName.get())
+                    config.name = name.value
+                    config.createdAt = System.currentTimeMillis()
+                    instance.config = config
+                    UI.getCurrent().navigate("/apps")
+                }
+                addThemeVariants(ButtonVariant.LUMO_WARNING)
+            }
         add(name, confirm)
     }
-
 }

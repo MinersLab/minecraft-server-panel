@@ -21,35 +21,37 @@ import minerslab.mcsp.util.toLocalDateTime
 class AppsView(
     instanceRepository: InstanceRepository,
     authContext: AuthenticationContext,
-    private val instanceService: InstanceService
+    private val instanceService: InstanceService,
 ) : VerticalLayout() {
-
     init {
         isPadding = true
-        val addInstanceButton = Button("创建实例", Icon(VaadinIcon.PLUS)).apply {
-            addClickListener {
-                UI.getCurrent().navigate("app/new/")
+        val addInstanceButton =
+            Button("创建实例", Icon(VaadinIcon.PLUS)).apply {
+                addClickListener {
+                    UI.getCurrent().navigate("app/new/")
+                }
+                addThemeVariants(ButtonVariant.LUMO_WARNING)
             }
-            addThemeVariants(ButtonVariant.LUMO_WARNING)
-        }
         val grid = Grid(Instance::class.java, false)
         grid.addColumn { it.getName() }.setHeader("实例名称")
         grid.addColumn { instanceService.getStatus(it).statusName }.setHeader("运行状态")
         grid.addColumn { "${it.config.inputCharset} / ${it.config.outputCharset}" }.setHeader("字节流编码")
-        grid.addColumn {
-            if (it.config.lastLaunchTime == null) "-" else toLocalDateTime(it.config.lastLaunchTime!!)
-        }
-            .setHeader("最后启动")
+        grid
+            .addColumn {
+                if (it.config.lastLaunchTime == null) "-" else toLocalDateTime(it.config.lastLaunchTime!!)
+            }.setHeader("最后启动")
         grid.isRowsDraggable = true
-        grid.addComponentColumn { instance ->
-            Button("管理").apply {
-                addClickListener {
-                    UI.getCurrent().navigate("apps/${instance.id}/manage")
+        grid
+            .addComponentColumn { instance ->
+                Button("管理").apply {
+                    addClickListener {
+                        UI.getCurrent().navigate("apps/${instance.id}/manage")
+                    }
                 }
-            }
-        }.setFrozenToEnd(true).setAutoWidth(true).setFlexGrow(0)
+            }.setFrozenToEnd(true)
+            .setAutoWidth(true)
+            .setFlexGrow(0)
         grid.setItems(instanceRepository.findAll().filter { it.config.users.contains(authContext.principalName.get()) })
         add(addInstanceButton, grid)
     }
-
 }

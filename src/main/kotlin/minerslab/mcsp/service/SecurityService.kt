@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class SecurityService {
-
     val authenticatedUser: UserDetails?
         get() {
             val context: SecurityContext = SecurityContextHolder.getContext()
@@ -23,13 +22,13 @@ class SecurityService {
         UI.getCurrent().page.setLocation(LOGOUT_SUCCESS_URL)
         val logoutHandler = SecurityContextLogoutHandler()
         logoutHandler.logout(
-            VaadinServletRequest.getCurrent().httpServletRequest, null,
-            null
+            VaadinServletRequest.getCurrent().httpServletRequest,
+            null,
+            null,
         )
     }
 
     companion object {
         private const val LOGOUT_SUCCESS_URL = "/"
     }
-
 }
