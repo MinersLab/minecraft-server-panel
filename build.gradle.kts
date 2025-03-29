@@ -35,7 +35,6 @@ dependencies {
 	implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
 
 	api("com.github.oshi:oshi-core:6.7.1")
-	api("com.google.jimfs:jimfs:1.3.0")
 	api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
 	api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
