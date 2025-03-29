@@ -19,12 +19,7 @@ const rule = defineConfig(
 
 export default tseslint.config(
     eslint.configs.recommended,
-    tseslint.configs.recommended.map(
-        it => {
-            if (it.rules) it.rules["@typescript-eslint/ban-ts-comment"] = "off";
-            return it;
-        }
-    ),
+    tseslint.configs.recommended,
     globalIgnores(["**/build/**", "**/generated/**", "types.d.ts", "vite.*"], "Ignore generated directory"),
     rule
 );

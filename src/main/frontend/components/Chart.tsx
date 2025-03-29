@@ -1,5 +1,4 @@
 import {ReactElement} from "react";
-// @ts-ignore
 import {ReactAdapterElement, type RenderHooks} from "Frontend/generated/flow/ReactAdapter";
 import ReactECharts, {EChartsOption} from "echarts-for-react";
 import * as echarts from "echarts";
@@ -406,7 +405,6 @@ echarts.registerTheme("mcsp-dark", theme);
 
 class McspChart extends ReactAdapterElement {
 
-    // @ts-ignore
     override render(hooks: RenderHooks): ReactElement | null {
         const [options] = hooks.useState<EChartsOption | null>("options", null);
         return options && <ReactECharts option={options} theme="mcsp-dark"></ReactECharts>;
@@ -414,5 +412,4 @@ class McspChart extends ReactAdapterElement {
 
 }
 
-// @ts-ignore
 customElements.define("mcsp-chart", McspChart);

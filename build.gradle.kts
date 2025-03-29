@@ -39,9 +39,6 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-
-    devNpm("eslint", version = "9.23.0")
-    devNpm("eslint-plugin-vue", version = "8.28.0")
 }
 
 dependencyManagement {

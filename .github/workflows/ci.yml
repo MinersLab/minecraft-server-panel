@@ -33,6 +33,6 @@ jobs:
 
       - name: Lint
         run: |
-          ./gradlew dependencies spotlessCheck
+          ./gradlew vaadinBuildFrontend spotlessCheck
           npm install
           npx eslint
