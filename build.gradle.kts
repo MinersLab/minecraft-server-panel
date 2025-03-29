@@ -1,7 +1,7 @@
 plugins {
 	kotlin("jvm") version "2.1.10"
 	kotlin("plugin.spring") version "2.1.20"
-	kotlin("plugin.serialization") version "2.1.10"
+	kotlin("plugin.serialization") version "2.1.20"
 	id("org.springframework.boot") version "4.0.0-SNAPSHOT"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("com.vaadin") version "24.7.1"
