@@ -5,8 +5,6 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.router.BeforeEnterEvent
-import com.vaadin.flow.router.BeforeEnterObserver
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouterLayout
 import com.vaadin.flow.spring.security.AuthenticationContext
@@ -19,7 +17,7 @@ import minerslab.mcsp.repository.InstanceRepository
 class CreateView(
     instanceRepository: InstanceRepository,
     authContext: AuthenticationContext
-) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
+) : VerticalLayout(), RouterLayout {
 
     init {
         isPadding = true
@@ -40,10 +38,6 @@ class CreateView(
             addThemeVariants(ButtonVariant.LUMO_WARNING)
         }
         add(name, confirm)
-    }
-
-    override fun beforeEnter(event: BeforeEnterEvent) {
-
     }
 
 }
