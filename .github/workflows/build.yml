@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: ['main']
+    paths: ['src/**', '**/*.gradle', 'gradle.properties']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'adopt'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew vaadinBuildFrontend build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Minecraft Server Panel
+          path: build/libs/
