@@ -1,7 +1,11 @@
 package minerslab.mcsp.util
 
 import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.HasElement
+import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -76,3 +80,39 @@ fun createSelectionCheckbox(labelText: String) =
         setItemLabelGenerator { if (it) "是" else "否" }
         setItemEnabledProvider { true }
     }
+
+fun HasComponents.showDialog(builder: Dialog.() -> Unit) {
+    val dialog = Dialog()
+    add(dialog)
+    dialog.addOpenedChangeListener {
+        if (!it.isOpened) remove(dialog)
+    }
+    builder(dialog)
+    dialog.open()
+}
+
+fun HasComponents.showConfirmDialog(
+    title: String,
+    text: String = "确定执行此操纵?",
+    callback: (accept: Boolean) -> Unit,
+) = showDialog {
+    headerTitle = title
+    add(text)
+    val footer =
+        row(
+            Button("关闭").apply {
+                addClickListener {
+                    close()
+                    callback(false)
+                }
+            },
+            Button("确定").apply {
+                addThemeVariants(ButtonVariant.LUMO_WARNING)
+                addClickListener {
+                    close()
+                    callback(true)
+                }
+            },
+        )
+    footer.add(footer)
+}

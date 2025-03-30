@@ -96,27 +96,27 @@ class InstanceService(
 
     suspend fun stop(instance: Instance, force: Boolean = false, restart: Boolean = false) =
         if (getStatus(instance) != InstanceStatus.RUNNING && getStatus(instance) != InstanceStatus.RESTARTING) Unit else
-        suspendCoroutine { continuation ->
-            instanceStatus[instance.id] = if (restart) InstanceStatus.RESTARTING else InstanceStatus.STOPPING
-            if (force || instance.config.stopCommand == "<mcsp:force-stop>") {
-                processPool[instance.id]?.destroyForcibly()
-                processPool.remove(instance.id)
-                instanceStatus[instance.id] = InstanceStatus.STOPPED
-                continuation.resume(Unit)
-            } else if (instance.config.stopCommand == "<mcsp:stop>") {
-                processPool[instance.id]?.destroy()
-                processPool.remove(instance.id)
-                instanceStatus[instance.id] = InstanceStatus.STOPPED
-                continuation.resume(Unit)
-            } else {
-                processPool[instance.id]?.outputStream?.write((instance.config.stopCommand + "\n").toByteArray())
-                processPool[instance.id]?.outputStream?.flush()
-                processPool[instance.id]?.onExit()?.handle { _, _ ->
+            suspendCoroutine { continuation ->
+                instanceStatus[instance.id] = if (restart) InstanceStatus.RESTARTING else InstanceStatus.STOPPING
+                if (force || instance.config.stopCommand == "<mcsp:force-stop>") {
+                    processPool[instance.id]?.destroyForcibly()
                     processPool.remove(instance.id)
-                    instanceStatus[instance.id] = if (restart) InstanceStatus.RESTARTING else InstanceStatus.STOPPED
+                    instanceStatus[instance.id] = InstanceStatus.STOPPED
                     continuation.resume(Unit)
+                } else if (instance.config.stopCommand == "<mcsp:stop>") {
+                    processPool[instance.id]?.destroy()
+                    processPool.remove(instance.id)
+                    instanceStatus[instance.id] = InstanceStatus.STOPPED
+                    continuation.resume(Unit)
+                } else {
+                    processPool[instance.id]?.outputStream?.write((instance.config.stopCommand + "\n").toByteArray())
+                    processPool[instance.id]?.outputStream?.flush()
+                    processPool[instance.id]?.onExit()?.handle { _, _ ->
+                        processPool.remove(instance.id)
+                        instanceStatus[instance.id] = if (restart) InstanceStatus.RESTARTING else InstanceStatus.STOPPED
+                        continuation.resume(Unit)
+                    }
                 }
             }
-        }
 
 }

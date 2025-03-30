@@ -244,7 +244,11 @@ class ManageView(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun createInlineCard(onClick: (ClickEvent<Anchor>) -> Unit, icon: (() -> Icon)? = null, callback: Card.() -> Unit): Anchor {
+    private fun createInlineCard(
+        onClick: (ClickEvent<Anchor>) -> Unit,
+        icon: (() -> Icon)? = null,
+        callback: Card.() -> Unit
+    ): Anchor {
         val card = Card().apply(callback)
         card.setHeightFull()
         card.setWidthFull()

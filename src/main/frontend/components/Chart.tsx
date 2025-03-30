@@ -403,7 +403,7 @@ export const theme =
 
 echarts.registerTheme("mcsp-dark", theme);
 
-class McspChart extends ReactAdapterElement {
+export default class McspChart extends ReactAdapterElement {
 
     override render(hooks: RenderHooks): ReactElement | null {
         const [options] = hooks.useState<EChartsOption | null>("options", null);
