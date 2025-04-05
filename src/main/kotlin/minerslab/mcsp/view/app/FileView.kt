@@ -22,18 +22,14 @@ import minerslab.mcsp.component.Breadcrumb
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
+import minerslab.mcsp.util.*
 import minerslab.mcsp.util.FileSizeUtil.formatFileSize
-import minerslab.mcsp.util.getChildFile
-import minerslab.mcsp.util.row
-import minerslab.mcsp.util.showConfirmDialog
-import minerslab.mcsp.util.showDialog
 import java.io.File
 import java.net.URLEncoder
 import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.io.path.name
 import kotlin.io.path.pathString
@@ -124,7 +120,7 @@ class FileView(
 
     private fun getFileModificationTime(file: File): String {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss"))
+            .format(DATETIME_FORMAT_1)
     }
 
     private fun createActionColumn(file: File): HorizontalLayout {
