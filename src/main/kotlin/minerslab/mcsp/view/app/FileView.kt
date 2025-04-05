@@ -31,7 +31,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlin.io.path.name
 import kotlin.io.path.pathString
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
@@ -302,9 +301,9 @@ class FileView(
     }
 
     private fun download(file: File): String {
-        val filePath = Path.of(file.toRelativeString(instance.path.toFile()))
-        val path = filePath.parent.pathString
-        val name = URLEncoder.encode(filePath.name, Charsets.UTF_8)
+        val directory = file.parentFile.toRelativeString(instance.path.toFile())
+        val path = Path.of(directory).pathString
+        val name = URLEncoder.encode(file.name, Charsets.UTF_8)
 
         return "/api/instance/$instanceId/download/$name?path=${URLEncoder.encode(path, Charsets.UTF_8)}"
     }
