@@ -37,6 +37,6 @@ class InstanceFileDownloadController(private val instanceRepository: InstanceRep
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .headers { it.contentDisposition = ContentDisposition.attachment().filename(name).build() }
             .body(InputStreamResource(file.inputStream()))
-    }.getOrNull() ?: ResponseEntity.notFound().build()
+    }.getOrElse { ResponseEntity.notFound().build() }
 
 }
