@@ -38,7 +38,7 @@ dependencies {
     api("com.github.oshi:oshi-core:6.8.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.0")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 }
 
 dependencyManagement {
