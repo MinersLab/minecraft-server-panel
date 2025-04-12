@@ -14,7 +14,9 @@ import minerslab.mcsp.security.McspAuthenticationContext
 
 @Route("/profile", layout = MainLayout::class)
 @PermitAll
-class ProfileView(authContext: McspAuthenticationContext) : VerticalLayout() {
+class ProfileView(
+    authContext: McspAuthenticationContext,
+) : VerticalLayout() {
     init {
         style["padding"] = "2rem"
         add(

@@ -34,9 +34,15 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
-    implementation("io.arrow-kt:arrow-core:2.0.1")
 
-    api("com.github.oshi:oshi-core:6.8.0")
+    implementation("io.arrow-kt:arrow-core:2.0.1")
+    implementation("com.github.oshi:oshi-core:6.8.0")
+
+    api("io.ktor:ktor-server-core-jvm:3.1.2")
+    api("io.ktor:ktor-client-content-negotiation:3.1.2")
+    api("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
+    api("io.ktor:ktor-client-cio:3.1.2")
+
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

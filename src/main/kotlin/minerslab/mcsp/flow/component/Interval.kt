@@ -1,4 +1,4 @@
-package minerslab.mcsp.component
+package minerslab.mcsp.flow.component
 
 import com.vaadin.flow.component.Tag
 import com.vaadin.flow.component.dependency.JsModule

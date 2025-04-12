@@ -22,7 +22,7 @@ import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.FileBuffer
 import com.vaadin.flow.router.*
 import jakarta.annotation.security.RolesAllowed
-import minerslab.mcsp.component.Breadcrumb
+import minerslab.mcsp.flow.component.Breadcrumb
 import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository

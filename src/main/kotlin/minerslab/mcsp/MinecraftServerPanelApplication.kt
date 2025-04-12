@@ -47,7 +47,6 @@ class MinecraftServerPanelApplication :
         }
         instanceEventService.start()
     }
-
 }
 
 fun main(args: Array<String>) {

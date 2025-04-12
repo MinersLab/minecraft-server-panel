@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class VisualDataController(
     private val visualDataService: VisualDataService,
-    private val authContext: McspAuthenticationContext
+    private val authContext: McspAuthenticationContext,
 ) {
-
     @RequestMapping("/api/visual-data/request-count", consumes = [MediaType.ALL_VALUE])
-    fun getRequestCountData() = authContext.withAuthenticated(role = Role.ADMIN) {
-        ResponseEntity.ok(visualDataService.getRequestCountData())
-    }.getOrElse { ResponseEntity.status(403).build() }
-
+    fun getRequestCountData() =
+        authContext
+            .withAuthenticated(role = Role.ADMIN) {
+                ResponseEntity.ok(visualDataService.getRequestCountData())
+            }.getOrElse { ResponseEntity.status(403).build() }
 }

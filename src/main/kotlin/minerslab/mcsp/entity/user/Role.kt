@@ -5,15 +5,18 @@ import minerslab.mcsp.security.McspAuthenticationContext
 
 @Serializable
 enum class Role {
-    OWNER, ADMIN, USER;
+    OWNER,
+    ADMIN,
+    USER,
+    ;
 
     companion object {
         fun of(name: String) = Role.entries.first { it.name == name }
     }
 
     context(McspAuthenticationContext)
-    fun hasPermission(): Boolean = roles.any {
-        it.ordinal >= ordinal
-    }
-
+    fun hasPermission(): Boolean =
+        roles.any {
+            it.ordinal >= ordinal
+        }
 }

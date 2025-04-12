@@ -17,10 +17,10 @@ import com.vaadin.flow.router.*
 import jakarta.annotation.security.RolesAllowed
 import kotlinx.coroutines.runBlocking
 import minerslab.mcsp.entity.instance.Instance
-import minerslab.mcsp.component.Badge
-import minerslab.mcsp.component.Breadcrumb
-import minerslab.mcsp.component.Card
-import minerslab.mcsp.component.Interval
+import minerslab.mcsp.flow.component.Badge
+import minerslab.mcsp.flow.component.Breadcrumb
+import minerslab.mcsp.flow.component.Card
+import minerslab.mcsp.flow.component.Interval
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.security.McspAuthenticationContext

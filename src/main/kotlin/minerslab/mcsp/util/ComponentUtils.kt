@@ -19,7 +19,6 @@ import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
 import kotlin.reflect.KProperty
 
-
 class Slot(
     private val name: String? = null,
 ) {
@@ -129,12 +128,14 @@ fun HasComponents.showPromptDialog(
     defaultValue: String? = null,
     validator: (oldValue: String, newValue: String) -> Boolean = { _, _ -> true },
     builder: Dialog.(textField: TextField) -> Unit = {},
-    callback: (value: String) -> Unit
+    callback: (value: String) -> Unit,
 ) = showDialog {
-    val input = TextField().apply {
-        placeholder = prompt
-        setWidthFull()
-    }.also { add(it) }
+    val input =
+        TextField()
+            .apply {
+                placeholder = prompt
+                setWidthFull()
+            }.also { add(it) }
     input.setManualValidation(true)
     if (defaultValue != null) input.value = defaultValue
     val oldValue = input.value
@@ -142,28 +143,36 @@ fun HasComponents.showPromptDialog(
         if (!validator(oldValue, it.value)) {
             input.isInvalid = true
             input.errorMessage = "无效输入"
-        } else input.isInvalid = false
+        } else {
+            input.isInvalid = false
+        }
     }
     builder(input)
     footer.apply {
-        Button("确认").apply {
-            addClickListener {
-                val newValue = input.value
-                if (validator(oldValue, newValue)) {
-                    callback(newValue)
-                    close()
+        Button("确认")
+            .apply {
+                addClickListener {
+                    val newValue = input.value
+                    if (validator(oldValue, newValue)) {
+                        callback(newValue)
+                        close()
+                    }
                 }
-            }
-        }.also { add(it) }
-        Button("取消").apply {
-            addClickListener { close() }
-        }.also { add(it) }
+            }.also { add(it) }
+        Button("取消")
+            .apply {
+                addClickListener { close() }
+            }.also { add(it) }
     }
     headerTitle = title
 }
 
 fun HasMenuItems.createIconItem(
-    icon: Icon, label: String? = null, ariaLabel: String? = null, tooltip: String? = null, isChild: Boolean = false
+    icon: Icon,
+    label: String? = null,
+    ariaLabel: String? = null,
+    tooltip: String? = null,
+    isChild: Boolean = false,
 ): MenuItem {
     if (isChild) {
         icon.style["width"] = "var(--lumo-icon-size-s)"
@@ -175,9 +184,11 @@ fun HasMenuItems.createIconItem(
 
     if (ariaLabel != null) item.setAriaLabel(ariaLabel)
     if (label != null) item.add(Text(label))
-    if (tooltip != null) Tooltip.forComponent(item).apply {
-        text = tooltip
-        hoverDelay = 0
+    if (tooltip != null) {
+        Tooltip.forComponent(item).apply {
+            text = tooltip
+            hoverDelay = 0
+        }
     }
 
     return item

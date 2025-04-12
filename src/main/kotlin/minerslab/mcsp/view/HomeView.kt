@@ -11,9 +11,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.react.ReactAdapterComponent
 import com.vaadin.flow.router.Route
 import jakarta.annotation.security.PermitAll
-import minerslab.mcsp.component.Card
-import minerslab.mcsp.component.Interval
 import minerslab.mcsp.entity.user.Role
+import minerslab.mcsp.flow.component.Card
+import minerslab.mcsp.flow.component.Interval
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.security.McspAuthenticationContext

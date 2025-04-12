@@ -9,21 +9,35 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.stereotype.Component
 
 @Component
-class McspAuthenticationContext(val authenticationContext: AuthenticationContext) {
-
+class McspAuthenticationContext(
+    val authenticationContext: AuthenticationContext,
+) {
     fun isAuthenticated() = authenticationContext.isAuthenticated && authenticationContext.principalName.isPresent
-    fun isAccess(role: Role): Boolean = role.hasPermission()
-    fun <T> withAuthenticated(role: Role? = null, block: McspAuthenticationContext.() -> T) =
-        if (isAuthenticated() && (role == null || isAccess(role))) Some(block())
-        else None
 
-    fun checkAccess(role: Role? = null, users: Collection<String>? = null) = apply {
-        if (!isAuthenticated())
+    fun isAccess(role: Role): Boolean = role.hasPermission()
+
+    fun <T> withAuthenticated(
+        role: Role? = null,
+        block: McspAuthenticationContext.() -> T,
+    ) = if (isAuthenticated() && (role == null || isAccess(role))) {
+        Some(block())
+    } else {
+        None
+    }
+
+    fun checkAccess(
+        role: Role? = null,
+        users: Collection<String>? = null,
+    ) = apply {
+        if (!isAuthenticated()) {
             throw SessionAuthenticationException("Not authenticated")
-        if (role != null && !isAccess(role))
+        }
+        if (role != null && !isAccess(role)) {
             throw AccessDeniedException()
-        if (users != null && !users.containsAll(listOf(userName)))
+        }
+        if (users != null && !users.containsAll(listOf(userName))) {
             throw AccessDeniedException()
+        }
     }
 
     val userName: String
@@ -33,5 +47,4 @@ class McspAuthenticationContext(val authenticationContext: AuthenticationContext
         get() = authenticationContext.grantedRoles.mapNotNull { runCatching { Role.of(it) }.getOrNull() }
 
     fun logout() = authenticationContext.logout()
-
 }

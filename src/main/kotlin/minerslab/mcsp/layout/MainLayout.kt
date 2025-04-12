@@ -11,7 +11,9 @@ import minerslab.mcsp.entity.user.Role
 import minerslab.mcsp.security.McspAuthenticationContext
 
 @Layout
-class MainLayout(authContext: McspAuthenticationContext): AppLayout(),
+class MainLayout(
+    authContext: McspAuthenticationContext,
+) : AppLayout(),
     HasDynamicTitle {
     override fun getPageTitle() = "Minecraft Server Panel"
 
