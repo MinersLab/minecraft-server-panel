@@ -16,19 +16,21 @@ import java.util.*
 private typealias Role = minerslab.mcsp.entity.user.Role
 
 @RestController
-class InstanceFileDownloadController(private val instanceRepository: InstanceRepository) {
+class InstanceFileDownloadController(
+    private val instanceRepository: InstanceRepository,
+    private val authContext: McspAuthenticationContext
+) {
 
-    context(McspAuthenticationContext)
     @GetMapping("/api/instance/{id}/download/{name}")
     fun download(
         @PathVariable id: String,
         @PathVariable name: String,
         @RequestParam path: String
     ): ResponseEntity<InputStreamResource> = runCatching {
-        if (!isAuthenticated()) return ResponseEntity.status(401).build()
-        if (!Role.ADMIN.hasPermission()) return ResponseEntity.status(403).build()
+        if (!authContext.isAuthenticated()) return ResponseEntity.status(401).build()
+        if (!authContext.isAccess(Role.ADMIN)) return ResponseEntity.status(403).build()
         val instance = instanceRepository.findById(UUID.fromString(id))
-        if (!instance.config.users.contains(userName)) return ResponseEntity.status(403).build()
+        if (!instance.config.users.contains(authContext.userName)) return ResponseEntity.status(403).build()
         val file = instance.path.toFile().getChildFile("$path/$name")
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
