@@ -37,6 +37,7 @@ dependencies {
 
     implementation("io.arrow-kt:arrow-core:2.0.1")
     implementation("com.github.oshi:oshi-core:6.8.0")
+    implementation("org.apache.commons:commons-compress:1.27.1")
 
     api("io.ktor:ktor-server-core-jvm:3.1.2")
     api("io.ktor:ktor-client-content-negotiation:3.1.2")
