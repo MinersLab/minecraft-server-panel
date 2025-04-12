@@ -103,9 +103,7 @@ class VanillaTemplate : ModLoaderTemplate<VanillaTemplate.Argument> {
         val versionUrl = fetchVersionUrl(data.version ?: return) ?: return
         val file = instance.path.toFile().getChildFile(SERVER_JAR)
         httpClient.get(versionUrl).bodyAsChannel().copyTo(file.writeChannel())
-        instance.config = instance.config.apply {
-            launchCommandLine = "java -jar $SERVER_JAR"
-        }
+        instance.config = instance.config.copy(launchCommandLine = "java -jar $SERVER_JAR")
     }
 
     override fun createArgument() = Argument()

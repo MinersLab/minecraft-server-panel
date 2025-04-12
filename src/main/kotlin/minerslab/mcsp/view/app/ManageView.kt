@@ -27,7 +27,6 @@ import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.service.instance.InstanceEventService
 import minerslab.mcsp.util.*
-import java.io.FileOutputStream
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.math.max
@@ -76,7 +75,7 @@ class ManageView(
         scroller.setHeightFull()
         scroller.scrollDirection = Scroller.ScrollDirection.BOTH
 
-        val input = createCommandInputField(instance, inputCharset, outputCharset, scroller)
+        val input = createCommandInputField(instance, inputCharset, scroller)
 
         val interval = createInterval(instance, outputCharset, outputHtml, scroller)
 
@@ -133,7 +132,6 @@ class ManageView(
     private fun createCommandInputField(
         instance: Instance,
         inputCharset: Charset,
-        outputCharset: Charset,
         scroller: Scroller
     ): TextField {
         return TextField().apply {
@@ -142,7 +140,7 @@ class ManageView(
             prefixComponent = VaadinIcon.ARROW_RIGHT.create()
             addKeyUpListener {
                 if (it.key.matches("Enter")) {
-                    log(instance, "$value\n", outputCharset)
+                    instance.log("$value\n")
                     instanceService.get(instance)?.outputStream?.write("$value\n".toByteArray(inputCharset))
                     instanceService.get(instance)?.outputStream?.flush()
                     if (commandHistory.contains(value)) commandHistory.remove(value)
@@ -167,18 +165,10 @@ class ManageView(
             isVisible = instanceService.get(instance)?.isAlive != true
             addClickListener {
                 instance.log.writeText("")
-                log(
-                    instance,
-                    "[MCSP] 启动中...\n> " + instance.config.launchCommandLine + "\n",
-                    Charset.forName(instance.config.outputCharset)
-                )
+                instance.log("[MCSP] 启动中...\n> " + instance.config.launchCommandLine + "\n")
                 instanceService.run(instance).onExit()
                     .handle { process, _ ->
-                        log(
-                            instance,
-                            "[MCSP] 程序已退出(${process.exitValue()})！",
-                            Charset.forName(instance.config.outputCharset)
-                        )
+                        instance.log("[MCSP] 程序已退出(${process.exitValue()})！")
                     }
                 ui.refreshCurrentRoute(false)
             }
@@ -186,7 +176,7 @@ class ManageView(
         val stopButton = Button("关闭").apply {
             isVisible = instanceService.getStatus(instance).isRunning
             addClickListener {
-                log(instance, "[MCSP] 关闭中...\n", Charset.forName(instance.config.outputCharset))
+                instance.log("[MCSP] 关闭中...\n")
                 runBlocking {
                     instanceService.stop(instance)
                 }
@@ -197,7 +187,7 @@ class ManageView(
             isVisible = instanceService.getStatus(instance).isRunning
             addThemeVariants(ButtonVariant.LUMO_CONTRAST)
             addClickListener {
-                log(instance, "[MCSP] 重启中...\n", Charset.forName(instance.config.outputCharset))
+                instance.log("[MCSP] 重启中...\n")
                 runBlocking {
                     instanceService.restart(instance)
                 }
@@ -208,7 +198,7 @@ class ManageView(
             isVisible = instanceService.get(instance)?.isAlive == true
             addThemeVariants(ButtonVariant.LUMO_ERROR)
             addClickListener {
-                log(instance, "[MCSP] 终止中...\n", Charset.forName(instance.config.outputCharset))
+                instance.log("[MCSP] 终止中...\n")
                 runBlocking {
                     instanceService.stop(instance, true)
                 }
@@ -263,12 +253,6 @@ class ManageView(
             onClick(it as ClickEvent<Anchor>)
         }
         return anchor
-    }
-
-    private fun log(instance: Instance, content: String, charset: Charset) {
-        val stream = FileOutputStream(instance.log, true)
-        stream.flush()
-        stream.write(content.toByteArray(charset))
     }
 
     @Suppress("ThisExpressionReferencesGlobalObjectJS")

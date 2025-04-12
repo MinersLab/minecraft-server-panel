@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.router.RouteParameters
 import com.vaadin.flow.router.RouterLayout
 import jakarta.annotation.security.RolesAllowed
 import kotlinx.coroutines.runBlocking
@@ -21,6 +22,7 @@ import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.util.Reference
 import minerslab.mcsp.util.mutableRef
+import minerslab.mcsp.view.app.ManageView
 
 @Route("app/new/", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
@@ -69,7 +71,7 @@ class CreateView(
         template.applyTo(templateRef.getValue(), instance)
 
         // 重定向
-        UI.getCurrent().navigate("/apps")
+        UI.getCurrent().navigate(ManageView::class.java, RouteParameters("id", instance.id.toString()))
     }
 
     fun createTemplateSelection(ref: Reference<TemplateArgument>) =

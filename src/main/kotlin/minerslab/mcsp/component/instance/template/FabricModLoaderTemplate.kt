@@ -15,9 +15,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.entity.instance.template.ModLoaderTemplate
+import minerslab.mcsp.entity.instance.template.ModLoaderTemplate.Companion.SERVER_JAR
 import minerslab.mcsp.entity.instance.template.TemplateArgument
 import minerslab.mcsp.util.getChildFile
-import org.springframework.http.ContentDisposition
 import org.springframework.stereotype.Component
 
 @Component
@@ -116,12 +116,10 @@ class FabricModLoaderTemplate : ModLoaderTemplate<FabricModLoaderTemplate.Argume
         )
 
     override suspend fun applyTo(data: Argument, instance: Instance) {
+        if (data.gameVersion == null || data.loaderVersion == null && data.installerVersion == null) return
         val installer = getInstaller(data.gameVersion!!.version, data.loaderVersion!!.version, data.installerVersion!!.version)
-        val fileName = installer.headers["Content-Disposition"]?.let { ContentDisposition.parse(it).filename } ?: ModLoaderTemplate.SERVER_JAR
-        installer.bodyAsChannel().copyTo(instance.path.toFile().getChildFile(fileName).writeChannel())
-        instance.config = instance.config.apply {
-            launchCommandLine = "java -jar $fileName"
-        }
+        installer.bodyAsChannel().copyTo(instance.path.toFile().getChildFile(SERVER_JAR).writeChannel())
+        instance.config = instance.config.copy(launchCommandLine = "java -jar $SERVER_JAR")
     }
 
     override fun getName() = "Fabric"
