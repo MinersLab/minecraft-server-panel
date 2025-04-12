@@ -14,16 +14,16 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.page.PendingJavaScriptResult
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
 import kotlinx.coroutines.runBlocking
-import minerslab.mcsp.app.instance.Instance
+import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.component.Badge
 import minerslab.mcsp.component.Breadcrumb
 import minerslab.mcsp.component.Card
 import minerslab.mcsp.component.Interval
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.service.instance.InstanceEventService
 import minerslab.mcsp.util.*
@@ -36,8 +36,8 @@ import kotlin.math.max
 @RolesAllowed("ADMIN")
 @JavaScript("https://cdn.jsdelivr.net/npm/ansi_up@5.1.0/ansi_up.min.js")
 class ManageView(
+    private val authContext: McspAuthenticationContext,
     private val instanceRepository: InstanceRepository,
-    private val authContext: AuthenticationContext,
     private val instanceService: InstanceService,
     private val instanceEventService: InstanceEventService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
@@ -58,9 +58,7 @@ class ManageView(
         val instance = instanceRepository.findById(UUID.fromString(instanceId))
         val inputCharset: Charset = Charset.forName(instance.config.inputCharset)
         val outputCharset: Charset = Charset.forName(instance.config.outputCharset)
-        if (!instance.config.users.contains(authContext.principalName.get())) {
-            event.rerouteToError(AccessDeniedException::class.java)
-        }
+        authContext.checkAccess(users = instance.config.users)
         initializeLayout(instance, inputCharset, outputCharset)
     }
 

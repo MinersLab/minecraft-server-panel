@@ -6,10 +6,10 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.*
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.createSelectionCheckbox
 import minerslab.mcsp.util.row
@@ -18,17 +18,15 @@ import java.util.*
 @Route("/apps/:id/config", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
 class ConfigView(
+    private val authContext: McspAuthenticationContext,
     private val instanceRepository: InstanceRepository,
-    private val authContext: AuthenticationContext,
     private val instanceService: InstanceService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
     override fun beforeEnter(event: BeforeEnterEvent) {
         val instanceId = event.routeParameters.get("id").get()
         val instance = instanceRepository.findById(UUID.fromString(instanceId))
-        if (!instance.config.users.contains(authContext.principalName.get())) {
-            event.rerouteToError(AccessDeniedException::class.java)
-        }
+        authContext.checkAccess(users = instance.config.users)
         val config = instance.config
         val name = TextField("实例名") { config.name = it.value }.apply { value = config.name }
 

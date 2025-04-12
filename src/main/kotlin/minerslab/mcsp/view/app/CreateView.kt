@@ -7,16 +7,16 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.router.RouterLayout
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 
 @Route("app/new/", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
 class CreateView(
-    instanceRepository: InstanceRepository,
-    authContext: AuthenticationContext,
+    private val authContext: McspAuthenticationContext,
+    instanceRepository: InstanceRepository
 ) : VerticalLayout(),
     RouterLayout {
     init {
@@ -31,7 +31,7 @@ class CreateView(
                     val instance = instanceRepository.addInstance()
                     if (name.value.trim().isEmpty()) name.value = instance.getName()
                     val config = instance.config
-                    config.users.add(authContext.principalName.get())
+                    config.users.add(authContext.userName)
                     config.name = name.value
                     config.createdAt = System.currentTimeMillis()
                     instance.config = config

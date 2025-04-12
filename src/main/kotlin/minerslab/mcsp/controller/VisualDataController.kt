@@ -1,6 +1,7 @@
 package minerslab.mcsp.controller
 
-import com.vaadin.flow.spring.security.AuthenticationContext
+import arrow.core.getOrElse
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.VisualDataService
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -11,11 +12,10 @@ import org.springframework.web.bind.annotation.RestController
 class VisualDataController(
     private val visualDataService: VisualDataService,
 ) {
+    context(McspAuthenticationContext)
     @RequestMapping("/api/visual-data/request-count", consumes = [MediaType.ALL_VALUE])
-    fun getRequestCountData(authContext: AuthenticationContext): ResponseEntity<MutableList<Int>> =
-        if (authContext.hasAnyRole("OWNER", "ADMIN")) {
-            ResponseEntity.ok(visualDataService.getRequestCountData())
-        } else {
-            ResponseEntity.status(403).build()
-        }
+    fun getRequestCountData() = withAuthenticated {
+        ResponseEntity.ok(visualDataService.getRequestCountData())
+    }.getOrElse { ResponseEntity.status(403).build() }
+
 }

@@ -6,6 +6,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator
 import com.vaadin.flow.theme.Theme
 import com.vaadin.flow.theme.lumo.Lumo
 import kotlinx.serialization.Serializable
+import minerslab.mcsp.entity.user.User
 import minerslab.mcsp.service.instance.InstanceEventService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,17 +32,7 @@ class MinecraftServerPanelApplication :
     @Serializable
     data class Config(
         val users: List<User> = listOf(),
-    ) {
-        @Serializable
-        data class User(
-            val name: String,
-            val password: String,
-            val roles: List<Role> = listOf(Role.USER),
-        ) {
-            @Serializable
-            enum class Role { OWNER, ADMIN, USER }
-        }
-    }
+    )
 
     @Autowired
     private lateinit var instanceEventService: InstanceEventService
@@ -56,6 +47,7 @@ class MinecraftServerPanelApplication :
         }
         instanceEventService.start()
     }
+
 }
 
 fun main(args: Array<String>) {

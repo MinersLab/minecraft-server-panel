@@ -8,19 +8,19 @@ import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.router.Route
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
-import minerslab.mcsp.app.instance.Instance
+import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.toLocalDateTime
 
 @Route("/apps", layout = MainLayout::class)
 @RolesAllowed("ADMIN")
 class AppsView(
+    private val authContext: McspAuthenticationContext,
     instanceRepository: InstanceRepository,
-    authContext: AuthenticationContext,
     private val instanceService: InstanceService,
 ) : VerticalLayout() {
     init {
@@ -51,7 +51,7 @@ class AppsView(
             }.setFrozenToEnd(true)
             .setAutoWidth(true)
             .setFlexGrow(0)
-        grid.setItems(instanceRepository.findAll().filter { it.config.users.contains(authContext.principalName.get()) })
+        grid.setItems(instanceRepository.findAll().filter { it.config.users.contains(authContext.userName) })
         add(addInstanceButton, grid)
     }
 }

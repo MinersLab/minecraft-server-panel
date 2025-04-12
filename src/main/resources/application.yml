@@ -1,2 +1,9 @@
-spring.application.name: minecraft-server-panel
-spring.application.version: ${project.version}
+spring.application:
+  name: minecraft-server-panel
+  version: ${project.version}
+spring.servlet.multipart:
+  max-file-size: -1
+  max-request-size: -1
+server:
+  tomcat:
+    max-swallow-size: -1

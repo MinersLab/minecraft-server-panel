@@ -1,31 +1,38 @@
 package minerslab.mcsp.view.app
 
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Anchor
+import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.menubar.MenuBar
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
+import com.vaadin.flow.component.upload.Upload
+import com.vaadin.flow.component.upload.receivers.FileBuffer
 import com.vaadin.flow.router.*
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.RolesAllowed
-import minerslab.mcsp.app.instance.Instance
 import minerslab.mcsp.component.Breadcrumb
+import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.*
 import minerslab.mcsp.util.FileSizeUtil.formatFileSize
 import java.io.File
 import java.net.URLEncoder
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
@@ -39,7 +46,7 @@ import kotlin.jvm.optionals.getOrNull
 @RolesAllowed("ADMIN")
 class FileView(
     private val instanceRepository: InstanceRepository,
-    private val authContext: AuthenticationContext,
+    private val authContext: McspAuthenticationContext,
     private val instanceService: InstanceService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
 
@@ -64,11 +71,7 @@ class FileView(
         base = getBaseDirectory()
         files = base.listFiles()?.filterNot { it.name.startsWith(".mcsp") }?.sortedByDescending { it.isDirectory }
             ?.toMutableList() ?: mutableListOf()
-
-        if (!instance.config.users.contains(authContext.principalName.get())) {
-            event.rerouteToError(AccessDeniedException::class.java)
-        }
-
+        authContext.checkAccess(users = instance.config.users)
         val grid = createGrid(base)
 
         add(createBar(grid))
@@ -154,6 +157,7 @@ class FileView(
                         if (it) {
                             file.deleteRecursively()
                             UI.getCurrent().refreshCurrentRoute(false)
+                            Notification.show("文件 ${file.name} 已删除")
                         }
                     }
                 }
@@ -161,39 +165,23 @@ class FileView(
         }
     }
 
-    private fun openRenameDialog(file: File) = showDialog {
-        isCloseOnEsc = false
-        isCloseOnOutsideClick = false
-        val input = TextField().apply { placeholder = "文件名" }.also { add(it) }
-        input.value = file.name
-        footer.apply {
-            Button("确认").apply {
-                addClickListener {
-                    val newFileName = input.value
-                    if (newFileName.isNotBlank() && newFileName != file.name) {
-                        val status = file.renameTo(File(file.parentFile, newFileName))
-                        Notification.show(if (status) "已将 ${file.name} 重命名为 $newFileName" else "重命名失败")
-                            .addThemeVariants(
-                                if (status) NotificationVariant.LUMO_SUCCESS else NotificationVariant.LUMO_WARNING
-                            )
-                    }
-                    UI.getCurrent().refreshCurrentRoute(true)
-                    close()
-                }
-            }.also { add(it) }
-            Button("取消").apply {
-                addClickListener {
-                    input.value = ""
-                    close()
-                }
-            }.also { add(it) }
-        }
-        headerTitle = "重命名 ${file.name}"
+    private fun openRenameDialog(file: File) = showPromptDialog(
+        "重命名 ${file.name}",
+        "新的名称",
+        file.name,
+        { old, new -> old != new && new.isNotBlank() }
+    ) {
+        val status = file.renameTo(File(file.parentFile, it))
+        Notification.show(if (status) "已将 ${file.name} 重命名为 $it" else "重命名失败")
+            .addThemeVariants(
+                if (status) NotificationVariant.LUMO_SUCCESS else NotificationVariant.LUMO_WARNING
+            )
+        UI.getCurrent().refreshCurrentRoute(true)
     }
 
-    private fun createBarButtons(): Array<Button> {
+    private fun createBarButtons(): HorizontalLayout {
         val clipboard = getFileClipboard()
-        return arrayOf(
+        val items = arrayOf<Component>(
             Button(Icon(VaadinIcon.PASTE)).apply {
                 isVisible = clipboard != null && !files.contains(clipboard.first) && !base.normalize()
                     .startsWith(clipboard.first)
@@ -209,8 +197,59 @@ class FileView(
                     UI.getCurrent().refreshCurrentRoute(false)
                 }
             },
-            Button("新建")
+            MenuBar().apply {
+                val fileMenu = createIconItem(VaadinIcon.PLUS.create(), label = "添加")
+                fileMenu.subMenu.createIconItem(VaadinIcon.FILE.create(), label = "新建文件").addClickListener {
+                    showCreateDialog()
+                }
+                fileMenu.subMenu.createIconItem(VaadinIcon.FOLDER.create(), label = "新建文件夹").addClickListener {
+                    showCreateDialog(true)
+                }
+                fileMenu.subMenu.createIconItem(VaadinIcon.UPLOAD.create(), label = "上传文件").addClickListener {
+                    showUploadDialog(FileBuffer())
+                }
+            }
         )
+        return row(*items, fullWidth = false)
+    }
+
+    private fun showCreateDialog(isFolder: Boolean = false) = showPromptDialog(
+        "输入${if (isFolder) "文件夹" else "文件"}名称",
+        "名称",
+        validator = { _, new -> new.isNotBlank() && !base.getChildFile(new).exists() }
+    ) {
+        val file = base.getChildFile(it)
+        if (isFolder) file.mkdir()
+        else file.createNewFile()
+        Notification.show("${if (isFolder) "文件夹" else "文件"}创建成功")
+        UI.getCurrent().refreshCurrentRoute(false)
+    }
+
+    private fun showUploadDialog(buffer: FileBuffer) {
+        showDialog {
+            val upload = Upload(buffer)
+            upload.i18n = UPLOAD_I18N
+            upload.isDropAllowed = true
+            upload.addStartedListener { file ->
+                if (base.getChildFile(file.fileName).exists()) {
+                    upload.interruptUpload()
+                    Notification.show("文件已存在").addThemeVariants(NotificationVariant.LUMO_WARNING)
+                }
+            }
+            upload.addSucceededListener { event ->
+                val file = base.getChildFile(event.fileName)
+                if (file.exists()) return@addSucceededListener
+                try {
+                    Files.copy(buffer.inputStream, file.toPath())
+                    Notification.show("文件上传成功").addThemeVariants(NotificationVariant.LUMO_SUCCESS)
+                } catch (_: Throwable) {
+                    Notification.show("文件上传失败").addThemeVariants(NotificationVariant.LUMO_WARNING)
+                }
+            }
+            headerTitle = "拖拽或移动文件以上传"
+            val section = Div(upload)
+            add(FormLayout(section))
+        }
     }
 
     private fun createBar(grid: Grid<File>): HorizontalLayout {
@@ -226,7 +265,7 @@ class FileView(
             isSpacing = true
             addToStart(Span("文件管理"))
             addToMiddle(search)
-            addToEnd(row(*createBarButtons(), fullWidth = false))
+            addToEnd(createBarButtons())
             setWidthFull()
         }
     }

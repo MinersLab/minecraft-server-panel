@@ -1,6 +1,6 @@
 package minerslab.mcsp.repository
 
-import minerslab.mcsp.app.instance.Instance
+import minerslab.mcsp.entity.instance.Instance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import java.nio.file.Path

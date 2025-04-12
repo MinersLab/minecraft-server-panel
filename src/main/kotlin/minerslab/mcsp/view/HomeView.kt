@@ -10,12 +10,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.react.ReactAdapterComponent
 import com.vaadin.flow.router.Route
-import com.vaadin.flow.spring.security.AuthenticationContext
 import jakarta.annotation.security.PermitAll
 import minerslab.mcsp.component.Card
 import minerslab.mcsp.component.Interval
+import minerslab.mcsp.entity.user.Role
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
+import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.FileSizeUtil
 import minerslab.mcsp.util.alignRow
@@ -38,7 +39,7 @@ class RequestCountingChart : ReactAdapterComponent()
 @Route("/", layout = MainLayout::class)
 @PermitAll
 class HomeView(
-    private val authContext: AuthenticationContext,
+    private val authContext: McspAuthenticationContext,
     private val instanceService: InstanceService,
     private val instanceRepository: InstanceRepository,
     @Value("\${spring.application.version}") private val version: String,
@@ -55,7 +56,7 @@ class HomeView(
         setHeightFull()
         setWidthFull()
         add(alignRow(createSystemResourceCard(), createWelcomeCard(), createInstanceCard()))
-        add(row(createRequestCountingCard().takeIf { authContext.hasAnyRole("OWNER", "ADMIN") }))
+        add(row(createRequestCountingCard().takeIf { authContext.isAccess(Role.ADMIN) }))
         add(createDataOverviewCard())
     }
 
@@ -118,7 +119,7 @@ class HomeView(
                 "Java 版本" to { JavaVersion.getJavaVersion().toString() },
                 "面板版本" to { version },
                 "进程用户名" to { System.getProperty("user.name") },
-                "面板用户名" to { authContext.principalName.get() },
+                "面板用户名" to { authContext.userName },
                 "面板时间" to { LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) },
                 "浏览器时间" to {
                     UI

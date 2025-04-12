@@ -34,6 +34,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
+    implementation("io.arrow-kt:arrow-core:2.0.1")
 
     api("com.github.oshi:oshi-core:6.8.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
@@ -49,7 +50,8 @@ dependencyManagement {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        freeCompilerArgs.add("-Xjsr305=strict")
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
 

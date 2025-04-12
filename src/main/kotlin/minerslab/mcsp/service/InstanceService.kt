@@ -4,7 +4,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import minerslab.mcsp.app.instance.Instance
+import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.instance.InstanceEventService
 import org.slf4j.Logger
@@ -52,7 +52,6 @@ class InstanceService(
     fun getStatus(instance: Instance) = instanceStatus[instance.id] ?: InstanceStatus.STOPPED
     fun setStatus(instance: Instance, status: InstanceStatus) = instanceStatus.put(instance.id, status)
     fun get(instance: Instance) = processPool[instance.id]
-
 
     fun run(instance: Instance): Process {
         instance.config = instance.config.run {

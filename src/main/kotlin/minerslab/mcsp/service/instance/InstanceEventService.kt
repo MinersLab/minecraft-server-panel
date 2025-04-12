@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import minerslab.mcsp.app.instance.Instance
+import minerslab.mcsp.entity.instance.Instance
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.createIfNotExists

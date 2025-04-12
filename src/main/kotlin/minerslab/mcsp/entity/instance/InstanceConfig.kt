@@ -1,4 +1,4 @@
-package minerslab.mcsp.app.instance
+package minerslab.mcsp.entity.instance
 
 import kotlinx.serialization.Serializable
 
