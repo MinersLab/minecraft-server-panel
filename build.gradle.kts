@@ -39,6 +39,9 @@ dependencies {
     implementation("com.github.oshi:oshi-core:6.8.0")
     implementation("org.apache.commons:commons-compress:1.27.1")
 
+    api("net.kyori:adventure-nbt:4.20.0")
+    api("net.kyori:regionfile:1.0.1")
+
     api("io.ktor:ktor-server-core-jvm:3.1.2")
     api("io.ktor:ktor-client-content-negotiation:3.1.2")
     api("io.ktor:ktor-serialization-kotlinx-json:3.1.2")

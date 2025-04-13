@@ -17,6 +17,7 @@ import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.tabs.TabSheet
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.FileBuffer
@@ -24,6 +25,10 @@ import com.vaadin.flow.router.*
 import jakarta.annotation.security.RolesAllowed
 import minerslab.mcsp.flow.component.Breadcrumb
 import minerslab.mcsp.entity.instance.Instance
+import minerslab.mcsp.flow.component.editor.CodeEditor
+import minerslab.mcsp.flow.component.editor.Editor
+import minerslab.mcsp.flow.component.editor.NbtEditor
+import minerslab.mcsp.flow.component.editor.RegionEditor
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.security.McspAuthenticationContext
@@ -125,8 +130,61 @@ class FileView(
             .format(DATETIME_FORMAT_1)
     }
 
+    private fun getAvailableEditorsFor(file: File): List<Editor> {
+        val name = file.name
+        val availableEditors = mutableListOf<Editor>()
+        if (name.endsWith(".dat") || name.endsWith(".dat_old") || name.endsWith(".nbt"))
+            availableEditors.add(NbtEditor())
+        if (name.endsWith(".mca"))
+            availableEditors.add(RegionEditor())
+        availableEditors.add(CodeEditor())
+        return availableEditors.mapNotNull {
+            runCatching { it.loadFrom(file); it }.getOrNull()
+        }
+    }
+
+    private fun showEditDialog(file: File) = showDialog {
+        val editors = getAvailableEditorsFor(file)
+        val tabSheet = TabSheet().apply {
+            setHeightFull()
+            setWidthFull()
+        }
+        for (editor in editors) {
+            tabSheet.add(editor.getName(), editor.asComponent())
+        }
+        headerTitle = "编辑 ${file.name}"
+        setWidthFull()
+        setHeightFull()
+        add(tabSheet)
+        val footerButtons = HorizontalLayout().apply {
+            Button("取消").apply {
+                addClickListener {
+                    close()
+                }
+            }.also { add(it) }
+            Button("保存").apply {
+                addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+                addClickListener {
+                    val editor = editors[tabSheet.selectedIndex]
+                    if (editor.saveTo(file)) {
+                        Notification.show("文件 ${file.name} 保存成功").addThemeVariants(NotificationVariant.LUMO_SUCCESS)
+                        close()
+                    } else Notification.show("文件 ${file.name} 保存失败").addThemeVariants(NotificationVariant.LUMO_ERROR)
+                }
+            }.also { add(it) }
+        }
+        footer.add(footerButtons)
+    }
+
     private fun createActionColumn(file: File): HorizontalLayout {
         return HorizontalLayout().apply {
+            Button(Icon(VaadinIcon.PENCIL)).apply {
+                isVisible = file.isFile
+                setTooltipText("编辑")
+                addClickListener {
+                    showEditDialog(file)
+                }
+            }.also { add(it) }
             Anchor().apply {
                 isVisible = file.isFile
                 setTarget("_blank")
