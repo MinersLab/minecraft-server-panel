@@ -86,10 +86,13 @@ class CreateView(
                 ref.setValue(it.value)
             }
             select.setItemLabelGenerator { it.getTemplate().getName() }
-            val items = listOf(ref.getValue()) +
-                    templates.map { it.createArgument() }
+            val items =
+                listOf(ref.getValue()) +
+                    templates
+                        .map { it.createArgument() }
                         .filterNot { it is EmptyTemplate.EmptyArgument }
-                        .sortedBy { it.getTemplate().getName() }.reversed()
+                        .sortedBy { it.getTemplate().getName() }
+                        .reversed()
             select.setItems(items)
             select.value = ref.getValue()
             add(select, section)

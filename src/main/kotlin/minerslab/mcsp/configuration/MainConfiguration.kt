@@ -22,11 +22,12 @@ class MainConfiguration {
         }
 
     @Bean
-    fun cachePath(): Path = appPath().resolve("caches").apply {
-        val file = toFile()
-        file.deleteRecursively()
-        file.mkdirs()
-    }
+    fun cachePath(): Path =
+        appPath().resolve("caches").apply {
+            val file = toFile()
+            file.deleteRecursively()
+            file.mkdirs()
+        }
 
     @OptIn(ExperimentalSerializationApi::class)
     @Bean

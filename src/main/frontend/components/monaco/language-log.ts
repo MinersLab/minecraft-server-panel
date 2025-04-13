@@ -48,7 +48,7 @@ export const language: monaco.languages.IMonarchLanguage = {
 
             // Exceptions
             [/\b([A-Za-z.]*Exception)\b/, 'string.regexp.emphasis.log.exceptiontype'],
-            [/^[\t ]*at[\t ].*$/, { token: 'string.key.emphasis.log.exception' }],
+            [/^[\t ]*at[\t ].*$/, {token: 'string.key.emphasis.log.exception'}],
 
             // URLs and domains
             [/\b[a-z]+:\/\/\S+\b\/?/, 'constant.language.log.constant'],
@@ -58,6 +58,6 @@ export const language: monaco.languages.IMonarchLanguage = {
 };
 
 export default function register(thisMonaco: typeof monaco) {
-    thisMonaco.languages.register({ id: 'log', extensions: [".log"] });
+    thisMonaco.languages.register({id: 'log', extensions: [".log"]});
     thisMonaco.languages.setMonarchTokensProvider('log', language);
 }

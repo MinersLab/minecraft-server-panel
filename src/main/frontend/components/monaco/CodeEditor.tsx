@@ -18,9 +18,6 @@ loader.config(
     }
 );
 
-
-
-
 export class McspCodeEditor extends ReactAdapterElement {
 
     override render(hooks: RenderHooks): ReactElement | null {

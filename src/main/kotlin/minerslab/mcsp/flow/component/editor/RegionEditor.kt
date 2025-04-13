@@ -12,8 +12,8 @@ import java.io.File
 
 fun RegionFile.getChunks(): CompoundBinaryTag {
     val result = mutableMapOf<Int, MutableMap<Int, CompoundBinaryTag>>()
-    for (x in 0 ..< 32) {
-        for (z in 0 ..< 32) {
+    for (x in 0..<32) {
+        for (z in 0..<32) {
             if (has(x, z)) {
                 val bytes = read(x, z)?.readAllBytes()
                 if (bytes != null) {
@@ -35,10 +35,13 @@ fun RegionFile.getChunks(): CompoundBinaryTag {
 }
 
 @Tag("mcsp-region-editor")
-class RegionEditor : Div(), Editor {
-
+class RegionEditor :
+    Div(),
+    Editor {
     private var isLoaded = false
+
     override fun isLoaded() = isLoaded
+
     val codeEditor = CodeEditor()
 
     init {
@@ -53,29 +56,31 @@ class RegionEditor : Div(), Editor {
         val region = RegionFile(file)
         val chunks = region.getChunks()
         region.close()
-        val code = TagStringIO.builder()
-            .indent(2)
-            .build()
-            .asString(chunks)
+        val code =
+            TagStringIO
+                .builder()
+                .indent(2)
+                .build()
+                .asString(chunks)
         codeEditor.setCode(code)
         isLoaded = true
     }
 
-    override fun saveTo(file: File) = runCatching {
-        val tag = TagStringIO.get().asCompound(codeEditor.getCode())
-        val region = RegionFile(file)
-        for (x in tag.keySet()) {
-            val current = tag.getCompound(x)
-            for (z in current.keySet()) {
-                val chunk = current.getCompound(z)
-                val writer = region.write(x.toInt(), z.toInt())
-                val stream = ByteArrayOutputStream()
-                BinaryTagIO.writer().write(chunk, stream)
-                writer!!.write(stream.toByteArray())
-                writer.close()
+    override fun saveTo(file: File) =
+        runCatching {
+            val tag = TagStringIO.get().asCompound(codeEditor.getCode())
+            val region = RegionFile(file)
+            for (x in tag.keySet()) {
+                val current = tag.getCompound(x)
+                for (z in current.keySet()) {
+                    val chunk = current.getCompound(z)
+                    val writer = region.write(x.toInt(), z.toInt())
+                    val stream = ByteArrayOutputStream()
+                    BinaryTagIO.writer().write(chunk, stream)
+                    writer!!.write(stream.toByteArray())
+                    writer.close()
+                }
             }
-        }
-        region.close()
-    }.isSuccess
-
+            region.close()
+        }.isSuccess
 }

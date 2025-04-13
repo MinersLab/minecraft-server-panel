@@ -8,6 +8,7 @@
  */
 import * as monaco from "monaco-editor";
 import {languages} from "monaco-editor";
+
 export const conf: languages.LanguageConfiguration = {
     comments: {
         lineComment: '#'
@@ -217,6 +218,7 @@ export const language: languages.IMonarchLanguage = {
     }
 };
 type State = languages.IMonarchLanguageRule[];
+
 function createIdentChainStates(tokenClass: string): Record<string, State> {
     const singleQuotedState = `identChain.${tokenClass}.singleQuoted`;
     const singleQuoteClass = `${tokenClass}.string.literal`;
@@ -250,12 +252,14 @@ function createIdentChainStates(tokenClass: string): Record<string, State> {
         [doubleQuotedState]: createSingleLineStringState(doubleQuoteClass)
     };
 }
+
 function createSingleLineLiteralStringState(tokenClass: string): State {
     return [
         [/[^']+/, tokenClass],
         [/'/, tokenClass, '@pop']
     ];
 }
+
 function createSingleLineStringState(tokenClass: string): State {
     return [
         [/[^"\\]+/, tokenClass],
