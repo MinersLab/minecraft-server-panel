@@ -6,15 +6,18 @@ import minerslab.mcsp.flow.component.editor.NbtEditor.Companion.COMPRESSION_TYPE
 import net.kyori.adventure.nbt.BinaryTagIO
 import net.kyori.adventure.nbt.CompoundBinaryTag
 import net.kyori.adventure.nbt.TagStringIO
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 
-fun BinaryTagIO.Reader.readFromStream(stream: InputStream): Pair<CompoundBinaryTag, BinaryTagIO.Compression> =
-    COMPRESSION_TYPES.firstNotNullOf {
+fun BinaryTagIO.Reader.readFromStream(stream: InputStream): Pair<CompoundBinaryTag, BinaryTagIO.Compression> {
+    val bytes = stream.readAllBytes()
+    return COMPRESSION_TYPES.firstNotNullOf {
         runCatching {
-            read(stream, it) to it
+            read(ByteArrayInputStream(bytes), it) to it
         }.getOrNull()
     }
+}
 
 @Tag("mcsp-nbt-editor")
 class NbtEditor :

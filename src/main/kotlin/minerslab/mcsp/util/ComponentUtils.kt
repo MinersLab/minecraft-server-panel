@@ -98,7 +98,7 @@ fun HasComponents.showDialog(builder: Dialog.() -> Unit) {
 
 fun HasComponents.showConfirmDialog(
     title: String,
-    text: String = "确定执行此操纵?",
+    text: String = "确定执行此操作?",
     callback: (accept: Boolean) -> Unit,
 ) = showDialog {
     headerTitle = title

@@ -32,6 +32,8 @@ import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.*
 import minerslab.mcsp.util.FileSizeUtil.formatFileSize
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaTypeFactory
 import java.io.File
 import java.net.URLEncoder
@@ -52,6 +54,11 @@ class FileView(
     private val authContext: McspAuthenticationContext,
     private val instanceService: InstanceService
 ) : VerticalLayout(), BeforeEnterObserver, RouterLayout {
+
+    companion object {
+        @JvmField
+        val LOGGER: Logger = LoggerFactory.getLogger(FileView::class.java)
+    }
 
     private lateinit var event: BeforeEnterEvent
     private lateinit var base: File
@@ -142,7 +149,12 @@ class FileView(
             availableEditors.add(ImageViewer(download(file)))
         availableEditors.add(CodeEditor())
         return availableEditors.mapNotNull {
-            runCatching { it.loadFrom(file); it }.getOrNull()
+            runCatching { it.loadFrom(file); it }
+                .also { result ->
+                    result.exceptionOrNull()?.printStackTrace()
+                    if (result.isFailure) LOGGER.info("编辑器 $it (${it.getName()}) 加载失败: $result")
+                }
+                .getOrNull()
         }
     }
 
