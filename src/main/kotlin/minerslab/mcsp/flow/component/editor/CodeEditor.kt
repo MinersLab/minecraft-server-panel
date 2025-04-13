@@ -47,9 +47,7 @@ class CodeEditor :
 
     fun setFileName(fileName: String) {
         var processedFileName = fileName
-        if (processedFileName.endsWith(".snbt")) {
-            processedFileName += ".toml"
-        }
+        if (processedFileName.endsWith(".snbt") || processedFileName.endsWith(".properties")) processedFileName += ".toml"
         setState("fileName", processedFileName)
     }
 

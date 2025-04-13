@@ -23,18 +23,16 @@ import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.FileBuffer
 import com.vaadin.flow.router.*
 import jakarta.annotation.security.RolesAllowed
-import minerslab.mcsp.flow.component.Breadcrumb
 import minerslab.mcsp.entity.instance.Instance
-import minerslab.mcsp.flow.component.editor.CodeEditor
-import minerslab.mcsp.flow.component.editor.Editor
-import minerslab.mcsp.flow.component.editor.NbtEditor
-import minerslab.mcsp.flow.component.editor.RegionEditor
+import minerslab.mcsp.flow.component.Breadcrumb
+import minerslab.mcsp.flow.component.editor.*
 import minerslab.mcsp.layout.MainLayout
 import minerslab.mcsp.repository.InstanceRepository
 import minerslab.mcsp.security.McspAuthenticationContext
 import minerslab.mcsp.service.InstanceService
 import minerslab.mcsp.util.*
 import minerslab.mcsp.util.FileSizeUtil.formatFileSize
+import org.springframework.http.MediaTypeFactory
 import java.io.File
 import java.net.URLEncoder
 import java.nio.file.Files
@@ -132,11 +130,16 @@ class FileView(
 
     private fun getAvailableEditorsFor(file: File): List<Editor> {
         val name = file.name
+        val mediaType = MediaTypeFactory.getMediaType(name).getOrNull()
         val availableEditors = mutableListOf<Editor>()
         if (name.endsWith(".dat") || name.endsWith(".dat_old") || name.endsWith(".nbt"))
             availableEditors.add(NbtEditor())
         if (name.endsWith(".mca"))
             availableEditors.add(RegionEditor())
+        if (name.endsWith(".properties"))
+            availableEditors.add(PropertiesEditor())
+        if (mediaType?.type == "image")
+            availableEditors.add(ImageViewer(download(file)))
         availableEditors.add(CodeEditor())
         return availableEditors.mapNotNull {
             runCatching { it.loadFrom(file); it }.getOrNull()
@@ -149,9 +152,7 @@ class FileView(
             setHeightFull()
             setWidthFull()
         }
-        for (editor in editors) {
-            tabSheet.add(editor.getName(), editor.asComponent())
-        }
+        for (editor in editors) tabSheet.add(editor.getName(), editor.asComponent())
         headerTitle = "编辑 ${file.name}"
         setWidthFull()
         setHeightFull()
@@ -166,7 +167,8 @@ class FileView(
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                 addClickListener {
                     val editor = editors[tabSheet.selectedIndex]
-                    if (editor.saveTo(file)) {
+                    val status = editor.saveTo(file) ?: return@addClickListener
+                    if (status) {
                         Notification.show("文件 ${file.name} 保存成功").addThemeVariants(NotificationVariant.LUMO_SUCCESS)
                         close()
                     } else Notification.show("文件 ${file.name} 保存失败").addThemeVariants(NotificationVariant.LUMO_ERROR)
@@ -213,9 +215,10 @@ class FileView(
                 addClickListener {
                     showConfirmDialog("删除") {
                         if (it) {
-                            file.deleteRecursively()
+                            if (file.isDirectory) file.deleteRecursively()
+                            else file.delete()
                             UI.getCurrent().refreshCurrentRoute(false)
-                            Notification.show("文件 ${file.name} 已删除")
+                            Notification.show("文件 ${file.name} 已删除").addThemeVariants(NotificationVariant.LUMO_SUCCESS)
                         }
                     }
                 }

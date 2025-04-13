@@ -10,7 +10,7 @@ interface Editor {
 
     fun loadFrom(file: File)
 
-    fun saveTo(file: File): Boolean
+    fun saveTo(file: File): Boolean?
 
     fun asComponent() = this as Component
 }
