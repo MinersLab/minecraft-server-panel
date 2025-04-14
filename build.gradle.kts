@@ -48,7 +48,7 @@ dependencies {
     api("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     api("io.ktor:ktor-client-cio:3.1.2")
 
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.8.1")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 }
