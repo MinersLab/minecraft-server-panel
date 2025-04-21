@@ -37,7 +37,7 @@ dependencies {
 
     implementation("io.arrow-kt:arrow-core:2.0.1")
     implementation("io.arrow-kt:arrow-core-serialization:2.0.1")
-    implementation("com.github.oshi:oshi-core:6.8.0")
+    implementation("com.github.oshi:oshi-core:6.8.1")
     implementation("org.apache.commons:commons-compress:1.27.1")
 
     api("net.kyori:adventure-nbt:4.20.0")
