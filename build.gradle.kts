@@ -36,7 +36,7 @@ dependencies {
     implementation("com.vaadin:vaadin-card-flow:${property("vaadin.version")}")
 
     implementation("io.arrow-kt:arrow-core:2.1.0")
-    implementation("io.arrow-kt:arrow-core-serialization:2.1.0")
+    implementation("io.arrow-kt:arrow-core-serialization:2.1.1")
     implementation("com.github.oshi:oshi-core:6.8.1")
     implementation("org.apache.commons:commons-compress:1.27.1")
 
