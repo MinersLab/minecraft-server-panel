@@ -44,7 +44,7 @@ dependencies {
     api("net.kyori:regionfile:1.0.1")
 
     api("io.ktor:ktor-server-core-jvm:3.1.3")
-    api("io.ktor:ktor-client-content-negotiation:3.1.2")
+    api("io.ktor:ktor-client-content-negotiation:3.1.3")
     api("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
     api("io.ktor:ktor-client-cio:3.1.2")
 
