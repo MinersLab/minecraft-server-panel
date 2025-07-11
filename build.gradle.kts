@@ -40,7 +40,7 @@ dependencies {
     implementation("com.github.oshi:oshi-core:6.8.2")
     implementation("org.apache.commons:commons-compress:1.27.1")
 
-    api("net.kyori:adventure-nbt:4.21.0")
+    api("net.kyori:adventure-nbt:4.23.0")
     api("net.kyori:regionfile:1.0.1")
 
     api("io.ktor:ktor-server-core-jvm:3.2.0")
