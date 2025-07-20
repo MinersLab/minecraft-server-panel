@@ -4,7 +4,7 @@ plugins {
     kotlin("plugin.serialization") version "2.1.21"
     id("org.springframework.boot") version "3.5.4-SNAPSHOT"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.vaadin") version "24.8.0"
+    id("com.vaadin") version "24.8.3"
     id("com.diffplug.spotless") version "7.1.0"
 }
 
