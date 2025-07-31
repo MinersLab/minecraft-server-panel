@@ -43,10 +43,10 @@ dependencies {
     api("net.kyori:adventure-nbt:4.23.0")
     api("net.kyori:regionfile:1.0.1")
 
-    api("io.ktor:ktor-server-core-jvm:3.2.1")
-    api("io.ktor:ktor-client-content-negotiation:3.2.1")
-    api("io.ktor:ktor-serialization-kotlinx-json:3.2.1")
-    api("io.ktor:ktor-client-cio:3.2.1")
+    api("io.ktor:ktor-server-core-jvm:3.2.2")
+    api("io.ktor:ktor-client-content-negotiation:3.2.2")
+    api("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
+    api("io.ktor:ktor-client-cio:3.2.2")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.9.0")
