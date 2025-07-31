@@ -5,7 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.5.5-SNAPSHOT"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.vaadin") version "24.8.3"
-    id("com.diffplug.spotless") version "7.1.0"
+    id("com.diffplug.spotless") version "7.2.1"
 }
 
 group = "minerslab.mcsp"
