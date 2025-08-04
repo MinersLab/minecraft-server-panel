@@ -38,7 +38,7 @@ dependencies {
     implementation("io.arrow-kt:arrow-core:2.1.2")
     implementation("io.arrow-kt:arrow-core-serialization:2.1.2")
     implementation("com.github.oshi:oshi-core:6.8.2")
-    implementation("org.apache.commons:commons-compress:1.27.1")
+    implementation("org.apache.commons:commons-compress:1.28.0")
 
     api("net.kyori:adventure-nbt:4.23.0")
     api("net.kyori:regionfile:1.0.1")
